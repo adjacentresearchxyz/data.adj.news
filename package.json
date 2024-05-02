@@ -1,8 +1,8 @@
 {
   "type": "module",
   "scripts": {
-    "dev": "npx observable preview",
-    "build": "rm -rf dist && npx observable build",
+    "dev": "observable preview",
+    "build": "rm -rf dist && observable build",
     "postinstall": "ln -sf ../../../../dist/bin/observable.js node_modules/.bin/observable"
   },
   "dependencies": {
