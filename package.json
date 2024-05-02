@@ -2,11 +2,11 @@
   "type": "module",
   "scripts": {
     "dev": "observable preview",
-    "build": "npm i && rm -rf dist && observable build",
+    "build": "npm i && rm -rf dist && node_modules/@observablehq/framework/dist/bin/observable.js build",
     "postinstall": "ln -sf ../../../../dist/bin/observable.js node_modules/.bin/observable"
   },
   "dependencies": {
-    "@observablehq/framework": "latest",
+    "@observablehq/framework": "^1.7.0",
     "d3": "^7.8.5",
     "dotenv": "^16.3.1",
     "topojson-client": "^3.1.0",
