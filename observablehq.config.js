@@ -1,9 +1,10 @@
 export default {
   root: "src",
-  title: "Kalshi Markets",
+  title: "Data by adj.news",
   theme: "near-midnight",
   pager: false,
   toc: false,
+  footer: `<div style="margin-top: -10em;">Last Updated ${new Date().toLocaleString()}</div>`,
   head:
     process.env.CI &&
     `<script type="module" async src="https://events.observablehq.com/client.js?pageLoad"></script>`,
