@@ -4,7 +4,7 @@ export default {
   theme: "near-midnight",
   pager: false,
   toc: false,
-  footer: `<div style="margin-top: -10em;">Last Updated ${new Date().toLocaleString()}</div>`,
+  footer: `<div style="margin-top: -10em;">Last Updated ${new Date().toLocaleString()} UTC</div>`,
   head:
     process.env.CI &&
     `<script type="module" async src="https://events.observablehq.com/client.js?pageLoad"></script>`,
