@@ -49,7 +49,7 @@ const timeParse = d3.utcParse("%Y-%m-%dT%H");
 const hourFormat = d3.timeFormat("%-I %p");
 ```
 
-We are aggregating data from various markets and exchanges to provide a comprehensive view of the current state of *things*. <br/>Any feedback? Send mail at <code>[nate@adjacentresearch.xyz](mailto:nate@adjacentresearch.xyz)</code> <br/> Data is updated hourly.
+We are aggregating data from various markets and exchanges to provide a comprehensive view of the current state of *things*. <br/>Any feedback? Send mail at <code>[nate@adjacentresearch.xyz](mailto:nate@adjacentresearch.xyz)</code> <br/> Data is updated hourly. Current data is for <code>${kalshiMarkets[0].date}</code>
 
 <div class="grid grid-cols-4">
   <div class="card" style="color: inherit;">
