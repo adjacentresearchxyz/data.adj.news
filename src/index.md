@@ -49,7 +49,7 @@ const timeParse = d3.utcParse("%Y-%m-%dT%H");
 const hourFormat = d3.timeFormat("%-I %p");
 ```
 
-We are aggregating data from various markets and exchanges to provide a comprehensive view of the current state of *things*. <br/>Any feedback? Send mail at <code>[nate@adjacentresearch.xyz](mailto:nate@adjacentresearch.xyz)</code>
+We are aggregating data from various markets and exchanges to provide a comprehensive view of the current state of *things*. <br/>Any feedback? Send mail at <code>[nate@adjacentresearch.xyz](mailto:nate@adjacentresearch.xyz)</code> <br/> Data is updated hourly.
 
 <div class="grid grid-cols-4">
   <div class="card" style="color: inherit;">
@@ -77,6 +77,9 @@ const search = view(Inputs.search(kalshiMarketsClean, {placeholder: "Search mark
       sort: "Daily Volume", 
       reverse: true,
       layout: "auto",
+      header: {
+        "Report Ticker": "Series"
+      },
       format: {
         "Ticker": d => htl.html`<a href="https://kalshi.com/markets/${d}" target="_blank">${d}</a>`,
         "Report Ticker": d => htl.html`<a href="https://kalshi.com/markets/${d}" target="_blank">${d}</a>`,
