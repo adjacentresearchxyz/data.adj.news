@@ -38,6 +38,17 @@ export default {
   }
 }
 
+.table-responsive {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table-responsive > .card {
+  min-width: 600px;
+}
+
 </style>
 <div style="display: flex; align-items: center; gap: 0.5rem; height: 2.2rem; margin: -1.5rem -2rem 2rem -2rem; padding: 0.5rem 2rem; border-bottom: solid 1px var(--theme-foreground-faintest); font: 500 16px var(--sans-serif);">
   <a href="https://adjacentresearch.xyz" target="_self" rel="" style="display: flex; align-items: center;">
