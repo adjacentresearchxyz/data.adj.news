@@ -3,11 +3,31 @@ export default {
   title: "Data by adj.news",
   theme: "near-midnight",
   pager: false,
-  toc: false,
-  footer: `<div style="margin-top: -10em;">Last Updated ${new Date().toLocaleString()} UTC</div>`,
-  head:
-    process.env.CI &&
-    `<script type="module" async src="https://events.observablehq.com/client.js?pageLoad"></script>`,
+  toc: true,
+  pager: false,
+  toc: true,
+  pages: [
+    {
+      name: "Overview",
+      open: true,
+      path: "/",
+    },
+    {
+      name: "Reporting",
+      open: false,
+      pages: [
+        {name: "Kalshi Stats", path: "/reporting#kalshi-stats"},
+        {name: "Active Markets", path: "/reporting#active-markets"},
+        {name: "Finalized Markets", path: "/reporting#finalized-markets"},
+        {name: "Trades", path: "/reporting#reported-trades"},
+      ]
+    }
+  ],
+  footer: ``,
+  head: `
+    <link rel="icon" href="https://pbs.twimg.com/profile_images/1668357289747554304/7NSJ60Fd_400x400.jpg" type="image/x-icon">
+    ${`<script type="module" async src="https://events.observablehq.com/client.js?pageLoad"></script>`}
+  `,
   header: `<style>
 
 #observablehq-header a[href] {
@@ -48,6 +68,11 @@ export default {
 
 .table-responsive > .card {
   min-width: 600px;
+}
+
+.dotted {
+  border-bottom: 1px dotted var(--theme-foreground-muted);
+  text-decoration: none;
 }
 
 </style>
