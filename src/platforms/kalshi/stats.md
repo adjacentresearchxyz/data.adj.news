@@ -1,0 +1,98 @@
+```js
+//
+// Load data snapshots
+//
+
+// Kalshi Markets 
+const kalshiMarkets = FileAttachment("../../data/kalshi/kalshi-markets.json").json();
+
+// Kalshi Trades 
+const kalshiTrades = FileAttachment("../../data/kalshi/kalshi-trades.json").json();
+```
+
+```js
+const kalshiMarketsCleanActive = kalshiMarkets
+  .filter(d => d.status === 'active')
+  .map((d) => ({
+    "Date": d.date,
+    "Ticker": d.ticker_name,
+    "Report Ticker": d.report_ticker,
+    "Payout Type": d.payout_type,
+    "Open Interest": d.open_interest,
+    "Daily Volume": d.daily_volume,
+    "Block Volume": d.block_volume,
+    "High": d.high,
+    "Low": d.low,
+    "Status": d.status,
+    "Platform": "Kalshi",
+  }));
+
+const kalshiMarketsCleanFinalized = kalshiMarkets
+  .filter(d => d.status === 'finalized')
+  .map((d) => ({
+    "Date": d.date,
+    "Ticker": d.ticker_name,
+    "Report Ticker": d.report_ticker,
+    "Payout Type": d.payout_type,
+    "Open Interest": d.open_interest,
+    "Daily Volume": d.daily_volume,
+    "Block Volume": d.block_volume,
+    "High": d.high,
+    "Low": d.low,
+    "Status": d.status,
+    "Platform": "Kalshi",
+  }));
+```
+
+```js
+const kalshiTradesClean = kalshiTrades.trades
+  .map((d) => ({
+    "Timestamp": d.create_date,
+    "Trade ID": d.trade_id,
+    "Market ID": d.market_id,
+    "Ticker": d.ticker,
+    "Price": d.price,
+    "Count": d.count,
+    "Taker Side": d.taker_side,
+  }));
+```
+
+```js
+function sparkbar(max) {
+  return (x) => htl.html`<div style="
+    background: var(--theme-blue);
+    color: black;
+    font: 10px/1.6 var(--sans-serif);
+    width: ${100 * x / max}%;
+    float: right;
+    padding-right: 3px;
+    box-sizing: border-box;
+    overflow: visible;
+    display: flex;
+    justify-content: end;">${x.toLocaleString("en-US")}`
+}
+```
+
+```js
+// Date/time format/parse
+const timeParse = d3.utcParse("%Y-%m-%dT%H");
+const hourFormat = d3.timeFormat("%-I %p");
+```
+
+## Kalshi Stats
+<h3>Last reported at <code>${kalshiMarketsCleanActive[0].Date}</code></h3>
+
+<div class="grid grid-cols-4">
+  <div class="card" style="color: inherit;">
+    <h2>Active Markets</h2>
+    <span class="big">${kalshiMarkets.filter(d => d.status === 'active').length}</span>
+  </div>
+  <div class="card" style="color: inherit;">
+    <h2>Open Interest</h2>
+    <span class="big">$${kalshiMarkets.filter(d => d.status === 'active').reduce((sum, market) => sum + market.open_interest, 0).toLocaleString()}</span>
+  </div>
+  <div class="card" style="color: inherit;">
+    <h2>Daily Volume</h2>
+    <span class="big">$${kalshiMarkets.filter(d => d.status === 'active').reduce((sum, market) => sum + market.daily_volume, 0).toLocaleString()}</span>
+  </div>
+</div>

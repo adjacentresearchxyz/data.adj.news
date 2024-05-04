@@ -4,10 +4,10 @@
 //
 
 // Kalshi Markets 
-const kalshiMarkets = FileAttachment("data/kalshi-markets.json").json();
+const kalshiMarkets = FileAttachment("../../data/kalshi/kalshi-markets.json").json();
 
 // Kalshi Trades 
-const kalshiTrades = FileAttachment("data/kalshi-trades.json").json();
+const kalshiTrades = FileAttachment("../../data/kalshi/kalshi-trades.json").json();
 ```
 
 ```js
@@ -79,23 +79,6 @@ const timeParse = d3.utcParse("%Y-%m-%dT%H");
 const hourFormat = d3.timeFormat("%-I %p");
 ```
 
-## Kalshi Stats
-
-<div class="grid grid-cols-4">
-  <div class="card" style="color: inherit;">
-    <h2>Active Markets</h2>
-    <span class="big">${kalshiMarkets.filter(d => d.status === 'active').length}</span>
-  </div>
-  <div class="card" style="color: inherit;">
-    <h2>Open Interest</h2>
-    <span class="big">$${kalshiMarkets.filter(d => d.status === 'active').reduce((sum, market) => sum + market.open_interest, 0).toLocaleString()}</span>
-  </div>
-  <div class="card" style="color: inherit;">
-    <h2>Daily Volume</h2>
-    <span class="big">$${kalshiMarkets.filter(d => d.status === 'active').reduce((sum, market) => sum + market.daily_volume, 0).toLocaleString()}</span>
-  </div>
-</div>
-
 ## Active Markets
 <h3>Last reported at <code>${kalshiMarketsCleanActive[0].Date}</code></h3>
 
@@ -115,8 +98,8 @@ const searchMarketsActive = view(Inputs.search(kalshiMarketsCleanActive, {placeh
         "Report Ticker": "Series"
       },
       format: {
-        "Ticker": d => htl.html`<a href="https://kalshi.com/markets/${d}" target="_blank">${d}</a>`,
-        "Report Ticker": d => htl.html`<a href="https://kalshi.com/markets/${d}" target="_blank">${d}</a>`,
+        "Ticker": d => htl.html`<a href="https://kalshi.com/markets/${d}?referral=39c1bef1-c544-4b49-ab85-d336be5dc41c" target="_blank">${d}</a>`,
+        "Report Ticker": d => htl.html`<a href="https://kalshi.com/markets/${d}?referral=39c1bef1-c544-4b49-ab85-d336be5dc41c" target="_blank">${d}</a>`,
         "Open Interest": sparkbar(d3.max(searchMarketsActive, d => d.open_interest)),
         "Daily Volume": sparkbar(d3.max(searchMarketsActive, d => d.daily_volume)),
         "Block Volume": sparkbar(d3.max(searchMarketsActive, d => d.block_volume)),
@@ -144,36 +127,11 @@ const searchMarketsFinalized = view(Inputs.search(kalshiMarketsCleanFinalized, {
         "Report Ticker": "Series"
       },
       format: {
-        "Ticker": d => htl.html`<a href="https://kalshi.com/markets/${d}" target="_blank">${d}</a>`,
-        "Report Ticker": d => htl.html`<a href="https://kalshi.com/markets/${d}" target="_blank">${d}</a>`,
+        "Ticker": d => htl.html`<a href="https://kalshi.com/markets/${d}?referral=39c1bef1-c544-4b49-ab85-d336be5dc41c" target="_blank">${d}</a>`,
+        "Report Ticker": d => htl.html`<a href="https://kalshi.com/markets/${d}?referral=39c1bef1-c544-4b49-ab85-d336be5dc41c" target="_blank">${d}</a>`,
         "Open Interest": sparkbar(d3.max(searchMarketsFinalized, d => d.open_interest)),
         "Daily Volume": sparkbar(d3.max(searchMarketsFinalized, d => d.daily_volume)),
         "Block Volume": sparkbar(d3.max(searchMarketsFinalized, d => d.block_volume)),
-      }
-    })}
-  </div>
-</div>
-
-## Reported Trades
-<h3>Last reported trade at <code>${kalshiTradesClean[0].Timestamp}</code></h3>
-
-```js
-const searchTrades = view(Inputs.search(kalshiTradesClean, {placeholder: "Search trades…"}));
-```
-
-<div class="table-responsive">
-  <div class="card" style="padding: 0;">
-    ${Inputs.table(kalshiTradesClean, {
-      rows: 30, 
-      sort: "Count", 
-      reverse: true,
-      layout: "auto",
-      columns: ["Timestamp", "Trade ID", "Market ID", "Ticker", "Price", "Count", "Taker Side"],
-      format: {
-        "Ticker": d => htl.html`<a href="https://kalshi.com/markets/${d}" target="_blank">${d}</a>`,
-        "Trade ID": d => d.length > 10 ? `${d.substring(0, 10)}...` : d,
-        "Market ID": d => d.length > 10 ? `${d.substring(0, 10)}...` : d,
-        "Count": sparkbar(d3.max(searchTrades, d => d.count)),
       }
     })}
   </div>
