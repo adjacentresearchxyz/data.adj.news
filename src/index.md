@@ -13,7 +13,11 @@ Below are a list of platforms we are currently tracking:
         <li><a href="/platforms/kalshi/stats" class="dotted">Stats</a></li>
     </ul>
   </li>
-  <li><a href="https://metaculus.com" class="dotted">Metaculus</a></li>
+  <li><a href="https://metaculus.com" class="dotted">Metaculus</a>
+    <ul>
+        <li><a href="/platforms/metaculus/markets" class="dotted">Markets</a></li>
+    </ul>
+  </li>
 </ul>
 
 <h3>Reporting</h3>
