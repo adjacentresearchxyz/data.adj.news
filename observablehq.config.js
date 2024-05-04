@@ -18,6 +18,7 @@ export default {
       pages: [
         {name: "Kalshi", path: "/platforms/kalshi/stats"},
         {name: "Metaculus", path: "/platforms/metaculus/markets"},
+        {name: "Polymarket", path: "/platforms/polymarket/markets"},
       ]
     },
     {

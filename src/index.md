@@ -18,6 +18,11 @@ Below are a list of platforms we are currently tracking:
         <li><a href="/platforms/metaculus/markets" class="dotted">Markets</a></li>
     </ul>
   </li>
+  <li><a href="https://polymarket.com" class="dotted">Polymarket</a>
+    <ul>
+        <li><a href="/platforms/polymarket/markets" class="dotted">Markets</a></li>
+    </ul>
+  </li>
 </ul>
 
 <h3>Reporting</h3>
