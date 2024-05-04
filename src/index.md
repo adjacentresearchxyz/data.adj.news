@@ -23,6 +23,15 @@ Below are a list of platforms we are currently tracking:
         <li><a href="/platforms/polymarket/markets" class="dotted">Markets</a></li>
     </ul>
   </li>
+  <li><a href="https://manifold.markets?referrer=lucaskohorst">Manifold</a>
+    <ul>
+        <li><a href="/platforms/manifold/markets" class="dotted">Markets</a></li>
+    </ul>
+  </li>
+  <li><a href="https://rootclaim.com" class="dotted">Rootclaim</a>
+    <ul>
+        <li><a href="/platforms/rootclaim/markets" class="dotted">Markets</a></li>
+    </ul>
 </ul>
 
 <h3>Reporting</h3>
