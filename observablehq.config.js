@@ -1,11 +1,11 @@
 export default {
   root: "src",
-  title: "Data by adj.news",
+  title: "adj.news",
   theme: "near-midnight",
   pager: false,
   toc: true,
   pager: false,
-  toc: true,
+  toc: false,
   pages: [
     {
       name: "Overview",
@@ -13,13 +13,18 @@ export default {
       path: "/",
     },
     {
-      name: "Reporting",
-      open: false,
+      name: "Platforms",
+      open: true,
       pages: [
-        {name: "Kalshi Stats", path: "/reporting#kalshi-stats"},
-        {name: "Active Markets", path: "/reporting#active-markets"},
-        {name: "Finalized Markets", path: "/reporting#finalized-markets"},
-        {name: "Trades", path: "/reporting#reported-trades"},
+        {name: "Kalshi", path: "/platforms/kalshi/stats"},
+      ]
+    },
+    {
+      name: "Reporting",
+      open: true,
+      pages: [
+        {name: "Kalshi Markets", path: "/platforms/kalshi/markets"},
+        {name: "Kalshi Trades", path: "/platforms/kalshi/trades"},
       ]
     }
   ],
@@ -70,9 +75,20 @@ export default {
   min-width: 600px;
 }
 
-.dotted {
+a:link.dotted,
+a:visited.dotted {
   border-bottom: 1px dotted var(--theme-foreground-muted);
   text-decoration: none;
+}
+
+a:hover.dotted {
+  border-bottom: 1.5px dotted var(--theme-foreground-muted);
+  text-decoration: none;
+}
+
+#primaryCTA {
+  width: 50%;
+  margin-left: -2em;
 }
 
 </style>
@@ -109,7 +125,7 @@ export default {
     </a>
     <span style="display: flex; align-items: baseline; gap: 0.5rem; font-size: 14px;">
       <a target="_blank" href="https://adjacentresearch.substack.com"><span>Research</span></a>
-      <a target="_blank" href="https://x.com/0xperp"><span>Twitter</span></a>
+      <a target="_blank" href="https://x.com/0xperp"><span>X</span></a>
     </span>
   </div>
 </div>`
