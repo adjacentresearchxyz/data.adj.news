@@ -63,7 +63,11 @@ const searchMarkets = view(Inputs.search(metaculusMarketsClean, {placeholder: "S
       reverse: true,
       layout: "auto",
       format: {
-        "Report Ticker": d => htl.html`<a href="https://kalshi.com/markets/${d}?referral=39c1bef1-c544-4b49-ab85-d336be5dc41c" target="_blank">${d}</a>`,
+        "ID": d => {
+          const splitID = d.split('-');
+          const baseURL = splitID[0] === 'goodjudgmentopen' ? 'https://www.gjopen.com/questions/' : 'https://www.metaculus.com/questions/';
+          return htl.html`<a href="${baseURL}${splitID[1]}" target="_blank">${d}</a>`;
+        },
         "Title": d => d.substring(0, 50) + "...",
         "Forecasts": sparkbar(d3.max(searchMarkets, d => d.numForecasts)),
       }
