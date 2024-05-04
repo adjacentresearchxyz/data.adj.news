@@ -91,6 +91,15 @@ a:hover.dotted {
   margin-left: -2em;
 }
 
+@media only screen and (max-width: 876px) {
+  #primaryCTA {
+    height: 3em;
+    width: 75%;
+    margin-left: 1em;
+    font-size: 0.6em;
+  }
+}
+
 </style>
 <div style="display: flex; align-items: center; gap: 0.5rem; height: 2.2rem; margin: -1.5rem -2rem 2rem -2rem; padding: 0.5rem 2rem; border-bottom: solid 1px var(--theme-foreground-faintest); font: 500 16px var(--sans-serif);">
   <a href="https://adjacentresearch.xyz" target="_self" rel="" style="display: flex; align-items: center;">
