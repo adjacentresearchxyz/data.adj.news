@@ -96,3 +96,32 @@ const hourFormat = d3.timeFormat("%-I %p");
     <span class="big">$${kalshiMarkets.filter(d => d.status === 'active').reduce((sum, market) => sum + market.daily_volume, 0).toLocaleString()}</span>
   </div>
 </div>
+
+## Active Markets
+<h3>Last reported at <code>${kalshiMarketsCleanActive[0].Date}</code></h3>
+
+```js
+const searchMarketsActive = view(Inputs.search(kalshiMarketsCleanActive, {placeholder: "Search markets…"}));
+```
+
+<div class="table-responsive">
+  <div class="card" style="padding: 0;">
+    ${Inputs.table(searchMarketsActive, {
+      rows: 30, 
+      sort: "Daily Volume", 
+      reverse: true,
+      layout: "auto",
+      columns: ["Date", "Ticker", "Report Ticker", "Open Interest", "Daily Volume", "Block Volume", "High", "Low", "Platform"],
+      header: {
+        "Report Ticker": "Series"
+      },
+      format: {
+        "Ticker": d => htl.html`<a href="https://kalshi.com/markets/${d}?referral=39c1bef1-c544-4b49-ab85-d336be5dc41c" target="_blank">${d}</a>`,
+        "Report Ticker": d => htl.html`<a href="https://kalshi.com/markets/${d}?referral=39c1bef1-c544-4b49-ab85-d336be5dc41c" target="_blank">${d}</a>`,
+        "Open Interest": sparkbar(d3.max(searchMarketsActive, d => d.open_interest)),
+        "Daily Volume": sparkbar(d3.max(searchMarketsActive, d => d.daily_volume)),
+        "Block Volume": sparkbar(d3.max(searchMarketsActive, d => d.block_volume)),
+      }
+    })}
+  </div>
+</div>

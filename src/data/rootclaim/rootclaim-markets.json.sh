@@ -1,0 +1,1 @@
+curl "https://live-rootclaim-backend.herokuapp.com/analysis/public-list?limit=1000&offset=0" -H "Content-Type: application/json"
