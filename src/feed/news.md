@@ -8,40 +8,30 @@
   const startDate = new Date();
   startDate.setDate(startDate.getDate() - 7);
 
-  const news = await fetch('https://api.exa.ai/api/search', {
+  const options = {
     method: 'POST',
     headers: {
-      'Accept': 'application/json, text/plain, */*',
-      'Accept-Language': 'en-US,en;q=0.9',
-      'Access-Control-Allow-Headers': '*',
-      'Access-Control-Allow-Methods': '*',
-      'Access-Control-Allow-Origin': '*',
-      'Content-Type': 'application/json',
-      'DNT': '1',
-      'Origin': 'https://exa.ai',
-      'Referer': 'https://exa.ai/',
-      'Sec-Fetch-Dest': 'empty',
-      'Sec-Fetch-Mode': 'cors',
-      'Sec-Fetch-Site': 'same-site',
-      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
+      accept: 'application/json',
+      'content-type': 'application/json',
+      'x-api-key': '8419346d-fcca-4911-a8d5-08cbe5f51778'
     },
     body: JSON.stringify({
-      "query": market,
-      "query_url_object":null,
-      "num_results":10,
-      "include_domains": ["bloomberg.com","reuters.com","businessinsider.com","ft.com", "nyt.com", "npr.org", "politico.com","wsj.com","cnbc.com","forbes.com","marketwatch.com", "seekingalpha.com"],
-      "exclude_domains": ["twitter.com", "x.com"],
-      "start_crawl_date": startDate.toISOString(),
-      "end_crawl_date": endDate.toISOString(),
-      "start_published_date": startDate.toISOString(),
-      "end_published_date": endDate.toISOString(),
-      "use_autoprompt":false,
-      "category": "news"
+      query: market,
+      type: 'keyword',
+      // includeDomains: ["bloomberg.com","reuters.com","businessinsider.com","ft.com", "nyt.com", "npr.org", "politico.com","wsj.com","cnbc.com","forbes.com","marketwatch.com", "seekingalpha.com", "twitter.com", "x.com"],
+      excludeDomains: null,
+      startCrawlDate: startDate.toISOString(),
+      endCrawlDate: endDate.toISOString(),
+      startPublishedDate: startDate.toISOString(),
+      endPublishedDate: endDate.toISOString(),
+      useAutoprompt: false,
     })
-  })
+  };
+
+  const news = await fetch('https://api.exa.ai/search', options)
   .then(response => response.json())
   .then(data => data.results
-    .filter(result => result.title && result.publishedDate && result.author && result.author != "None")
+    .filter(result => result.title && result.publishedDate)
     .map(result => ({
       ...result,
       Article: {
