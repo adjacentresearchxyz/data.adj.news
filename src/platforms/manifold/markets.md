@@ -8,30 +8,6 @@ const manifoldMarkets = FileAttachment("../../data/manifold/manifold-markets.jso
 ```
 
 ```js
-// "id": "jihgS8KtykBqqIcuZBAG",
-//     "creatorId": "hDq0cvn68jbAUVd6aWIU9aSv9ZA2",
-//     "creatorUsername": "strutheo",
-//     "creatorName": "chris (strutheo)",
-//     "createdTime": 1714858379075,
-//     "creatorAvatarUrl": "https://firebasestorage.googleapis.com/v0/b/mantic-markets.appspot.com/o/user-images%2Fstrutheo%2FkMuR3ttqcY.png?alt=media&token=a90c9db0-678b-42d7-9a8a-874f55f21b3d",
-//     "closeTime": 1782964740000,
-//     "question": "Will Kevin Durant be a Phoenix Suns player on July 1st 2026?",
-//     "slug": "will-kevin-durant-be-a-phoenix-suns",
-//     "url": "https://manifold.markets/strutheo/will-kevin-durant-be-a-phoenix-suns",
-//     "pool": {
-//       "NO": 100,
-//       "YES": 100
-//     },
-//     "probability": 0.5,
-//     "p": 0.5,
-//     "totalLiquidity": 100,
-//     "outcomeType": "BINARY",
-//     "mechanism": "cpmm-1",
-//     "volume": 0,
-//     "volume24Hours": 0,
-//     "isResolved": false,
-//     "uniqueBettorCount": 0,
-//     "lastUpdatedTime": 1714858379371
 const manifoldMarketsClean = manifoldMarkets
   .filter(d => d.volume > 0) // Filter out markets with no volume
   .filter(d => d.probability > 0) // Filter out markets with no probability
@@ -44,6 +20,7 @@ const manifoldMarketsClean = manifoldMarkets
     "Probability": d.probability,
     "Unique Bettor Count": d.uniqueBettorCount,
     "Volume": d.volume,
+    "News": d.question,
     "Platform": "Manifold",
   }));
 ```
@@ -77,6 +54,27 @@ const hourFormat = d3.timeFormat("%-I %p");
 const searchMarkets = view(Inputs.search(manifoldMarketsClean, {placeholder: "Search markets…"}));
 ```
 
+```js
+  Inputs.button("Download CSV", {
+    value: null,
+    reduce: () => {
+      // Convert searchMarkets to CSV
+      const csv = searchMarkets.map(row => Object.values(row).join(',')).join('\n');
+
+      // Create a Blob with the CSV data
+      const blob = new Blob([csv], {type: 'text/csv'});
+
+      // Create a download link and click it
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      const date = new Date();
+      const dateString = `${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()}`;
+      link.download = `manifold-${dateString}.csv`;
+      link.click();
+    }
+  })
+```
+
 <div class="table-responsive">
   <div class="card" style="padding: 0;">
     ${Inputs.table(searchMarkets, {
@@ -88,7 +86,8 @@ const searchMarkets = view(Inputs.search(manifoldMarketsClean, {placeholder: "Se
         "Slug": d => htl.html`<a href="${d.url}" target="_blank">${d.slug.substring(0,25)}</a>`,
         "Question": d => d.substring(0,50) + "...",
         "Unique Bettor Count": sparkbar(d3.max(searchMarkets, d => d["Unique Bettor Count"])),
-        "Volume": sparkbar(d3.max(searchMarkets, d => d.volume))
+        "Volume": sparkbar(d3.max(searchMarkets, d => d.volume)),
+        "News": d => htl.html`<a href="/feed/news?market=${d}" target="_blank">News</a>`,
       }
     })}
   </div>

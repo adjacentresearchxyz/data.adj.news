@@ -22,6 +22,7 @@ const metaculusMarketsClean = metaculusMarkets.data.questions.edges
     "No": d.node.options[1].probability,
     "Forecasts": d.node.qualityIndicators.numForecasts,
     "Stars": d.node.qualityIndicators.stars,
+    "News": d.node.title,
     "Platform": "Metaculus",
   }));
 ```
@@ -55,6 +56,27 @@ const hourFormat = d3.timeFormat("%-I %p");
 const searchMarkets = view(Inputs.search(metaculusMarketsClean, {placeholder: "Search markets…"}));
 ```
 
+```js
+  Inputs.button("Download CSV", {
+    value: null,
+    reduce: () => {
+      // Convert searchMarkets to CSV
+      const csv = searchMarkets.map(row => Object.values(row).join(',')).join('\n');
+
+      // Create a Blob with the CSV data
+      const blob = new Blob([csv], {type: 'text/csv'});
+
+      // Create a download link and click it
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      const date = new Date();
+      const dateString = `${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()}`;
+      link.download = `metaculus-${dateString}.csv`;
+      link.click();
+    }
+  })
+```
+
 <div class="table-responsive">
   <div class="card" style="padding: 0;">
     ${Inputs.table(searchMarkets, {
@@ -70,6 +92,8 @@ const searchMarkets = view(Inputs.search(metaculusMarketsClean, {placeholder: "S
         },
         "Title": d => d.substring(0, 50) + "...",
         "Forecasts": sparkbar(d3.max(searchMarkets, d => d.numForecasts)),
+        "News": d => htl.html`<a href="/feed/news?market=${d}" target="_blank">News</a>`,
+        "Date": d => d.substring(0, 10),
       }
     })}
   </div>

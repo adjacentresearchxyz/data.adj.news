@@ -9,6 +9,8 @@ const polymarketMarkets = FileAttachment("../../data/polymarket/polymarket-marke
 
 ```js
 const polymarketMarketsClean = polymarketMarkets.data
+  .filter(d => d.active) // Filter out inactive markets
+  .filter(d => !d.archived) // Filter out archived markets
   .map((d) => ({
     "Date": new Date().toLocaleDateString(),
     "ID": d.market_slug,
@@ -16,9 +18,10 @@ const polymarketMarketsClean = polymarketMarkets.data
     "Description": d.description,
     "Yes": d.tokens[0].price,
     "No": d.tokens[1].price,
-    "Active": d.active,
-    "Closed": d.closed,
-    "Archived": d.archived,
+    // "Active": d.active,
+    // "Closed": d.closed,
+    // "Archived": d.archived,
+    "News": d.question,
     "Platform": "Polymarket",
   }));
 ```
@@ -52,6 +55,27 @@ const hourFormat = d3.timeFormat("%-I %p");
 const searchMarkets = view(Inputs.search(polymarketMarketsClean, {placeholder: "Search markets…"}));
 ```
 
+```js
+  Inputs.button("Download CSV", {
+    value: null,
+    reduce: () => {
+      // Convert searchMarkets to CSV
+      const csv = searchMarkets.map(row => Object.values(row).join(',')).join('\n');
+
+      // Create a Blob with the CSV data
+      const blob = new Blob([csv], {type: 'text/csv'});
+
+      // Create a download link and click it
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      const date = new Date();
+      const dateString = `${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()}`;
+      link.download = `polymarket-${dateString}.csv`;
+      link.click();
+    }
+  })
+```
+
 <div class="table-responsive">
   <div class="card" style="padding: 0;">
     ${Inputs.table(searchMarkets, {
@@ -63,6 +87,7 @@ const searchMarkets = view(Inputs.search(polymarketMarketsClean, {placeholder: "
         "Title": d => d.substring(0, 50) + "...",
         "Description": d => d.substring(0, 50) + "...",
         "ID": d => htl.html`<a href="https://polymarket.com/event/${d}" target="_blank">${d.substring(0,15) + "..."}</a>`,
+        "News": d => htl.html`<a href="/feed/news?market=${d}" target="_blank">News</a>`,
       }
     })}
   </div>
