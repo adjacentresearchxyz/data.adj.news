@@ -10,11 +10,15 @@
 
   const options = {
     method: 'POST',
-    mode: 'cors',
     headers: {
       accept: 'application/json',
       'content-type': 'application/json',
-      'x-api-key': '8419346d-fcca-4911-a8d5-08cbe5f51778'
+      'x-api-key': '8419346d-fcca-4911-a8d5-08cbe5f51778',
+      'Accept-Language': 'en-US,en;q=0.9',
+      'Access-Control-Allow-Headers': '*',
+      'Access-Control-Allow-Methods': '*',
+      'Access-Control-Allow-Origin': '*',
+ 
     },
     body: JSON.stringify({
       query: 'Will Destiny talk to Sneako in May 2024?',
