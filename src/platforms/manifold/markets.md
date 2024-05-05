@@ -17,7 +17,10 @@ const manifoldMarketsClean = manifoldMarkets
         "url": d.url,
     },
     "Question": d.question,
-    "News": d.question,
+    "News": {
+      "question": d.question,
+      "url": d.url,
+    },
     "Probability": d.probability,
     "Unique Bettor Count": d.uniqueBettorCount,
     "Volume": d.volume,
@@ -88,7 +91,7 @@ const searchMarkets = view(Inputs.search(manifoldMarketsClean, {placeholder: "Se
         "Unique Bettor Count": sparkbar(d3.max(searchMarkets, d => d["Unique Bettor Count"])),
         "Volume": sparkbar(d3.max(searchMarkets, d => d.volume)),
         "News": d => htl.html`<div style="display: flex; justify-content: center; align-items: center;">
-          <a href="/feed/news?market=${d}">
+          <a href="/feed/news?market=${d.question}">
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-external-link">
               <path d="M15 3h6v6"/>
               <path d="M10 14 21 3"/>

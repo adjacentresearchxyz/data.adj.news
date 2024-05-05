@@ -1,9 +1,11 @@
 ```js
-  import Exa from "npm:exa-js"
-
   // Get the market query parameter from the URL
   const urlParams = new URLSearchParams(window.location.search);
   const market = urlParams.get('market');
+```
+
+```js
+  import Exa from "npm:exa-js";
 
   // Get the current date and the date one week ago
   const endDate = new Date();
@@ -34,10 +36,9 @@
 ```
 
 <div>
-  <h1>News</h1>
-  <h4>Powered by <a href="https://exa.ai" target="_blank">Exa</a></h4>
-  <br />
-  <p>> <i>${market}</i></p>
+  <h3>News</h3>
+  <a href="https://exa.ai" target="_blank">Powered by Exa</a>
+  <p>> <code>${market}</code></p>
   <div>
       ${Inputs.table(news, {
       rows: 30, 
