@@ -10,22 +10,20 @@
 
   const options = {
     method: 'POST',
-    mode: 'no-cors',
+    mode: 'cors',
     headers: {
       accept: 'application/json',
       'content-type': 'application/json',
       'x-api-key': '8419346d-fcca-4911-a8d5-08cbe5f51778'
     },
     body: JSON.stringify({
-      query: market,
-      type: 'keyword',
-      // includeDomains: ["bloomberg.com","reuters.com","businessinsider.com","ft.com", "nyt.com", "npr.org", "politico.com","wsj.com","cnbc.com","forbes.com","marketwatch.com", "seekingalpha.com", "twitter.com", "x.com"],
-      excludeDomains: null,
-      startCrawlDate: startDate.toISOString(),
-      endCrawlDate: endDate.toISOString(),
-      startPublishedDate: startDate.toISOString(),
-      endPublishedDate: endDate.toISOString(),
+      query: 'Will Destiny talk to Sneako in May 2024?',
       useAutoprompt: false,
+      type: 'keyword',
+      endCrawlDate: '2024-05-05T15:01:41.358Z',
+      endPublishedDate: '2024-05-05T15:01:41.358Z',
+      startCrawlDate: '2024-04-28T15:01:41.358Z',
+      startPublishedDate: '2024-04-28T15:01:41.358Z'
     })
   };
 
@@ -46,7 +44,10 @@
 ```
 
 <div>
-  <p>${market}</p>
+  <h1>News</h1>
+  <h4>Powered by <a href="https://exa.ai" target="_blank">Exa</a></h4>
+  <br />
+  <p>> <i>${market}</i></p>
   <div>
       ${Inputs.table(news, {
       rows: 30, 

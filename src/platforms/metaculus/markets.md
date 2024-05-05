@@ -17,12 +17,12 @@ const metaculusMarketsClean = metaculusMarkets.data.questions.edges
     "Date": d.node.fetchedStr,
     "ID": d.node.id,
     "Title": d.node.title,
+    "News": d.node.title,
     // "Link": d.node.url,
     "Yes": d.node.options[0].probability,
     "No": d.node.options[1].probability,
     "Forecasts": d.node.qualityIndicators.numForecasts,
     "Stars": d.node.qualityIndicators.stars,
-    "News": d.node.title,
     "Platform": "Metaculus",
   }));
 ```
@@ -92,7 +92,15 @@ const searchMarkets = view(Inputs.search(metaculusMarketsClean, {placeholder: "S
         },
         "Title": d => d.substring(0, 50) + "...",
         "Forecasts": sparkbar(d3.max(searchMarkets, d => d.numForecasts)),
-        "News": d => htl.html`<a href="/feed/news?market=${d}" target="_blank">News</a>`,
+        "News": d => htl.html`<div style="display: flex; justify-content: center; align-items: center;">
+          <a href="/feed/news?market=${d}">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-external-link">
+              <path d="M15 3h6v6"/>
+              <path d="M10 14 21 3"/>
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+            </svg>
+          </a>
+        </div>`,
         "Date": d => d.substring(0, 10),
       }
     })}
