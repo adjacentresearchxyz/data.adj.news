@@ -86,6 +86,27 @@ const hourFormat = d3.timeFormat("%-I %p");
 const searchMarketsActive = view(Inputs.search(kalshiMarketsCleanActive, {placeholder: "Search markets…"}));
 ```
 
+```js
+  Inputs.button("Download CSV", {
+    value: null,
+    reduce: () => {
+      // Convert searchMarkets to CSV
+      const csv = searchMarketsActive.map(row => Object.values(row).join(',')).join('\n');
+
+      // Create a Blob with the CSV data
+      const blob = new Blob([csv], {type: 'text/csv'});
+
+      // Create a download link and click it
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      const date = new Date();
+      const dateString = `${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()}`;
+      link.download = `kalshi-active-markets-${dateString}.csv`;
+      link.click();
+    }
+  })
+```
+
 <div class="table-responsive">
   <div class="card" style="padding: 0;">
     ${Inputs.table(searchMarketsActive, {
@@ -113,6 +134,27 @@ const searchMarketsActive = view(Inputs.search(kalshiMarketsCleanActive, {placeh
 
 ```js
 const searchMarketsFinalized = view(Inputs.search(kalshiMarketsCleanFinalized, {placeholder: "Search markets…"}));
+```
+
+```js
+  Inputs.button("Download CSV", {
+    value: null,
+    reduce: () => {
+      // Convert searchMarkets to CSV
+      const csv = searchMarketsFinalized.map(row => Object.values(row).join(',')).join('\n');
+
+      // Create a Blob with the CSV data
+      const blob = new Blob([csv], {type: 'text/csv'});
+
+      // Create a download link and click it
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      const date = new Date();
+      const dateString = `${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()}`;
+      link.download = `kalshi-active-markets-${dateString}.csv`;
+      link.click();
+    }
+  })
 ```
 
 <div class="table-responsive">
