@@ -98,6 +98,13 @@ a:hover.dotted {
   text-decoration: none;
 }
 
+.flex {
+  display: flex; 
+  align-items: baseline; 
+  gap: 0.5rem; 
+  ont-size: 14px;
+}
+
 #primaryCTA {
   width: 50%;
   margin-left: -2em;
@@ -112,9 +119,25 @@ a:hover.dotted {
   }
 }
 
+@media only screen and (max-width: 876px) {
+  .header {
+    font-size: 0.75em;
+    margin-left: 0em;
+  }
+
+  .header svg {
+    width: 2em;
+    height: 2em;
+  }
+
+  .hide {
+    display: none;
+  }
+}
+
 </style>
 <div style="display: flex; align-items: center; gap: 0.5rem; height: 2.2rem; margin: -1.5rem -2rem 2rem -2rem; padding: 0.5rem 2rem; border-bottom: solid 1px var(--theme-foreground-faintest); font: 500 16px var(--sans-serif);">
-  <a href="/" target="_self" rel="" style="display: flex; align-items: center;">
+  <a href="/" target="_self" rel="" style="display: flex; align-items: center;" class="header">
     <svg version="1.0" xmlns="http://www.w3.org/2000/svg"
         width="50" height="50" viewBox="0 0 167.000000 167.000000"
         preserveAspectRatio="xMidYMid meet">
@@ -140,14 +163,14 @@ a:hover.dotted {
       </g>
     </svg>
   </a>
-    <a href="/markets/" style="margin-left: 2em">Markets</a>
-    <a href="/platforms/" style="margin-left: 1em">Platforms</a>
-    <a href="/reporting/" style="margin-left: 1em">Reporting</a>
+    <a href="/markets/" style="margin-left: 2em" class="header">Markets</a>
+    <a href="/platforms/" style="margin-left: 1em" class="header">Platforms</a>
+    <a href="/reporting/" style="margin-left: 1em" class="header">Reporting</a>
     <div style="display: flex; flex-grow: 1; justify-content: space-between; align-items: baseline;">
     <a href="">
       
     </a>
-    <span style="display: flex; align-items: baseline; gap: 0.5rem; font-size: 14px;">
+    <span class="hide flex">
       <a target="_blank" href="https://adjacentresearch.substack.com"><span>Research</span></a>
       <a target="_blank" href="https://x.com/0xperp"><span>X</span></a>
     </span>
