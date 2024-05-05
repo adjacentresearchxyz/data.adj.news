@@ -1,4 +1,6 @@
 ```js
+  import Exa from "npm:exa-js"
+
   // Get the market query parameter from the URL
   const urlParams = new URLSearchParams(window.location.search);
   const market = urlParams.get('market');
@@ -8,44 +10,27 @@
   const startDate = new Date();
   startDate.setDate(startDate.getDate() - 7);
 
-  const options = {
-    method: 'POST',
-    mode: 'no-cors',
-    headers: {
-      accept: 'application/json',
-      'content-type': 'application/json',
-      'x-api-key': '8419346d-fcca-4911-a8d5-08cbe5f51778',
-      'Accept-Language': 'en-US,en;q=0.9',
-      'Access-Control-Allow-Headers': '*',
-      'Access-Control-Allow-Methods': '*',
-      'Access-Control-Allow-Origin': '*',
- 
-    },
-    body: JSON.stringify({
-      query: 'Will Destiny talk to Sneako in May 2024?',
+  // const exa = new Exa(process.env.EXA_API_KEY)
+  const exa = new Exa('8419346d-fcca-4911-a8d5-08cbe5f51778')
+  const results = await exa.search(market, {
       useAutoprompt: false,
       type: 'keyword',
-      endCrawlDate: '2024-05-05T15:01:41.358Z',
-      endPublishedDate: '2024-05-05T15:01:41.358Z',
-      startCrawlDate: '2024-04-28T15:01:41.358Z',
-      startPublishedDate: '2024-04-28T15:01:41.358Z'
-    })
-  };
+      endCrawlDate: startDate.toISOString(),
+      endPublishedDate: endDate.toISOString(),
+      startCrawlDate: startDate.toISOString(),
+      startPublishedDate: endDate.toISOString(),
+  });
 
-  const news = await fetch('https://api.exa.ai/search', options)
-  .then(response => response.json())
-  .then(data => data.results
-    .filter(result => result.title && result.publishedDate)
-    .map(result => ({
-      ...result,
-      Article: {
-        title: result.title,
-        url: result.url
-      },
-      Published: result.publishedDate,
-      Source: result.author
-    })))
-  .catch(error => console.error('Error:', error));
+  const news = await results.results
+  .filter(result => result.title && result.publishedDate)
+  .map(result => ({
+    Article: {
+      title: result.title,
+      url: result.url
+    },
+    Published: result.publishedDate,
+    Source: result.author
+  }))
 ```
 
 <div>
