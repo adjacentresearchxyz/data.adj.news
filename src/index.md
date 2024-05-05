@@ -8,3 +8,5 @@ Get the latest updates by joining our waitlist
 <div id="getWaitlistContainer" data-waitlist_id="16399" data-widget_type="WIDGET_3"></div>
 <link rel="stylesheet" type="text/css" href="https://prod-waitlist-widget.s3.us-east-2.amazonaws.com/getwaitlist.min.css"/>
 <script src="https://prod-waitlist-widget.s3.us-east-2.amazonaws.com/getwaitlist.min.js"></script>
+
+or by reading our blog at <a href="https://adjacentresearch.substack.com" class="dotted">adjacentresearch.substack.com</a>
