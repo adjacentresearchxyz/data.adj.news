@@ -31,9 +31,17 @@ export default {
       ]
     }
   ],
-  footer: `Updated every 1h. Last Updated at ${new Date().toLocaleString()} by <a href="https://x.com/adjacent___" target="_blank">@adjacent___</a>`,
+  footer: `Updated every 1h. Last Updated at ${new Date().toLocaleString()} (UTC) by <a href="https://x.com/adjacent___" target="_blank">@adjacent___</a>`,
   head: `
     <link rel="icon" href="https://pbs.twimg.com/profile_images/1668357289747554304/7NSJ60Fd_400x400.jpg" type="image/x-icon">
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-JM45G4SC33"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-JM45G4SC33');
+    </script>
     <meta property="og:image" content="https://pbs.twimg.com/profile_images/1668357289747554304/7NSJ60Fd_400x400.jpg"/>
     <link rel="apple-touch-icon" href="https://pbs.twimg.com/profile_images/1668357289747554304/7NSJ60Fd_400x400.jpg">
     <meta name="apple-mobile-web-app-title" content="Adjacent">
