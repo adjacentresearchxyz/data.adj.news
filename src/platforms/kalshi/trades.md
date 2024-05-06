@@ -72,7 +72,7 @@ const searchTrades = view(Inputs.search(kalshiTradesClean, {placeholder: "Search
 
 <div class="table-responsive">
   <div class="card" style="padding: 0;">
-    ${Inputs.table(kalshiTradesClean, {
+    ${Inputs.table(searchTrades, {
       rows: 30, 
       sort: "Timestamp", 
       reverse: true,
