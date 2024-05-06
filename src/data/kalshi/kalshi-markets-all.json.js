@@ -15,20 +15,22 @@
 //   },
 // ...
 // ]
+import fs from 'fs';
 
 let data = [{}];
 
 async function getDatedData(date) {
+  console.log(`Fetching data for ${date}`)
   const url = `https://kalshi-public-docs.s3.amazonaws.com/reporting/market_data_${date}.json`;
   const response = await fetch(url).then(res => res.json());
-  const finalizedMarkets = response.filter(market => market.status === 'finalized');
+  const finalizedMarkets = response.filter(market => market.status === 'finalized'); // @TODO: should I have a status for this?
   const mappedMarkets = finalizedMarkets.map(market => ({
     "Reported Date": new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '').slice(0, 16),
     "End Date": null,
     "Market": market.ticker_name,
     "Open Interest": market.open_interest, // for $ markets
     "Volume": market.daily_volume + market.block_volume,
-    "Probability": market.tokens.map((token) => token.outcome === "Yes" ? token.price : null),
+    "Probability": market.high, // @TODO pull from actual market to get current price
     "Question": null,
     "Description": null,
     "Forecasts": null, // for non $ markets
@@ -58,4 +60,4 @@ async function getData(onlyYesterday = false) {
 }  
 
 getData();
-process.stdout.write(JSON.stringify(data, null, 2));
+fs.writeFileSync('kalshi-all-markets.json', JSON.stringify(data, null, 2));
