@@ -5,25 +5,14 @@
 ```
 
 ```js
-  import Exa from "npm:exa-js";
-
-  // Get the current date and the date one week ago
-  const endDate = new Date();
-  const startDate = new Date();
-  startDate.setDate(startDate.getDate() - 7);
-
-  // const exa = new Exa(process.env.EXA_API_KEY)
-  const exa = new Exa('8419346d-fcca-4911-a8d5-08cbe5f51778')
-  const results = await exa.search(market, {
-      useAutoprompt: false,
-      type: 'keyword',
-      endCrawlDate: startDate.toISOString(),
-      endPublishedDate: endDate.toISOString(),
-      startCrawlDate: startDate.toISOString(),
-      startPublishedDate: endDate.toISOString(),
+  // Fetch news data
+  const results = await fetch(`https://api.adj.news/api/news?market=${market}`, {
+    mode: 'no-cors'
   });
 
-  const news = await results.results
+  console.log(results)
+
+  const news = await results.news.results.results
   .filter(result => result.title && result.publishedDate)
   .map(result => ({
     Article: {
@@ -37,7 +26,7 @@
 
 <div>
   <h3>News</h3>
-  <a href="https://exa.ai" target="_blank">Powered by Exa</a>
+  Powered by <a href="https://exa.ai" target="_blank" class="dotted">Exa</a>
   <p>> <code>${market}</code></p>
   <div>
       ${Inputs.table(news, {
