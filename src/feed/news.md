@@ -6,13 +6,11 @@
 
 ```js
   // Fetch news data
-  const results = await fetch(`https://api.adj.news/api/news?market=${market}`, {
-    mode: 'no-cors'
-  });
+  const response = await fetch(`https://api.adj.news/api/news/${market}`);
+  // const response = await fetch(`http://localhost:8787/api/news/${market}`);
+  const data = await response.json();
 
-  console.log(results)
-
-  const news = await results.news.results.results
+  const news = await data.results
   .filter(result => result.title && result.publishedDate)
   .map(result => ({
     Article: {
