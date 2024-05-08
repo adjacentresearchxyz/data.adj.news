@@ -31,7 +31,16 @@ export default {
       ]
     }
   ],
-  footer: `Updated every 1h. Last Updated at ${new Date().toLocaleString()} (UTC) by <a href="https://x.com/adjacent___" target="_blank">@adjacent___</a>`,
+  footer: `<div>
+      <div>
+        <a target="_blank" href="https://api.adj.news"><span>API</span></a> /
+        <a target="_blank" href="https://adjacentresearch.substack.com"><span>Research</span></a> /
+        <a target="_blank" href="https://x.com/0xperp"><span>X</span></a>
+      </div>
+      <p>Updated every 1h. Last Updated at ${new Date().toLocaleString()} (UTC) by <a href="https://x.com/adjacent___" target="_blank">@adjacent___</a></p>
+      <p>Disclaimer: This is not financial advice. This is a collection of data from various sources. Please do your own research before making any investment decisions.</p>
+    </div>
+  `,
   head: `
     <link rel="icon" href="https://pbs.twimg.com/profile_images/1668357289747554304/7NSJ60Fd_400x400.jpg" type="image/x-icon">
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-JM45G4SC33"></script>
@@ -177,13 +186,6 @@ a:hover.dotted {
     <a href="/platforms/" style="margin-left: 1em" class="header">Platforms</a>
     <a href="/reporting/" style="margin-left: 1em" class="header">Reporting</a>
     <div style="display: flex; flex-grow: 1; justify-content: space-between; align-items: baseline;">
-    <a href="">
-      
-    </a>
-    <span class="hide flex">
-      <a target="_blank" href="https://adjacentresearch.substack.com"><span>Research</span></a>
-      <a target="_blank" href="https://x.com/0xperp"><span>X</span></a>
-    </span>
   </div>
 </div>`
 };
