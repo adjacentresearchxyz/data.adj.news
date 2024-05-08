@@ -5,8 +5,6 @@
 
 // Polymarket Markets 
 const polymarketMarkets = FileAttachment("../../data/polymarket/polymarket-markets.json").json();
-
-console.log(polymarketMarkets);
 ```
 
 ```js
