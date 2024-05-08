@@ -12,18 +12,11 @@ export default {
       path: "/",
     },
     {
-      name: "Platforms",
-      open: true,
-      pages: [
-        {name: "Kalshi", path: "/platforms/kalshi/stats"},
-        {name: "Metaculus", path: "/platforms/metaculus/markets"},
-        {name: "Polymarket", path: "/platforms/polymarket/markets"},
-        {name: "Manifold", path: "/platforms/manifold/markets"},
-        {name: "Rootclaim", path: "/platforms/rootclaim/markets"},
-      ]
+      name: "markets",
+      path: "/markets",
     },
     {
-      name: "Reports and Fillings",
+      name: "Reporting",
       open: true,
       pages: [
         {name: "Kalshi Markets", path: "/platforms/kalshi/markets"},
