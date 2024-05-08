@@ -26,6 +26,8 @@ export default {
   ],
   footer: `<div>
       <div>
+        <a target="_blank" href="/platforms"><span>Platforms</span></a> /
+        <a target="_blank" href="/reporting"><span>Reporting</span></a> /
         <a target="_blank" href="https://api.adj.news"><span>API</span></a> /
         <a target="_blank" href="https://adjacentresearch.substack.com"><span>Research</span></a> /
         <a target="_blank" href="https://x.com/0xperp"><span>X</span></a>
@@ -175,9 +177,9 @@ a:hover.dotted {
       </g>
     </svg>
   </a>
-    <a href="/markets/" style="margin-left: 2em" class="header">Markets</a>
-    <a href="/platforms/" style="margin-left: 1em" class="header">Platforms</a>
-    <a href="/reporting/" style="margin-left: 1em" class="header">Reporting</a>
+    <div>
+      <a href="/markets/" style="margin-left: 2em" class="header">Markets</a>
+    </div>
     <div style="display: flex; flex-grow: 1; justify-content: space-between; align-items: baseline;">
   </div>
 </div>`
