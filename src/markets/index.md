@@ -154,12 +154,21 @@ const hourFormat = d3.timeFormat("%-I %p");
 ## Markets
 
 ```js
+// Active Markets Toggle
 const  marketStatus = view(Inputs.toggle({label: "Only Active Markets", value: true, description: "Toggle to show only active markets"}));
+
+// Platform Filter
+const marketPlatforms = allMarkets.map(d => d.Platform).filter((v, i, a) => a.indexOf(v) === i)
+const platformFilter = view(Inputs.select(["All", ...marketPlatforms], {label: "Platforms", value: "All"}));
 ```
 
 ```js
 // if marketStatus is true, filter out the finalized markets
-const filteredMarkets = allMarkets.filter(d => marketStatus ? d.Status === "active" | d.Status === null : true);
+let filteredMarkets = allMarkets.filter(d => marketStatus ? d.Status === "active" | d.Status === null : true);
+
+// if platformFilter is not "All", filter out the markets that don't match the platform
+filteredMarkets = filteredMarkets.filter(d => platformFilter === "All" ? true : d.Platform === platformFilter);
+
 const searchMarkets = view(Inputs.search(filteredMarkets, {placeholder: "Search markets…"}));
 ```
 
