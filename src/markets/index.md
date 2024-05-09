@@ -116,7 +116,7 @@ const kalshiMarketsClean = kalshiMarkets
     "Forecasts": null,
     "Link": "https://kalshi.com/markets/" + d.report_ticker,
     "News": {
-      "Question": d.ticker_name,
+      "Question": d.report_ticker,
       "URL": "https://kalshi.com/markets/" + d.report_ticker,
     },
     "Status": d.status,
