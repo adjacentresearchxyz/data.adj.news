@@ -6,7 +6,8 @@
 
 ```js
   // Fetch news data
-  const response = await fetch(`https://api.adj.news/news/${market}`);
+  const response = await fetch(`https://api.adj.news/api/news/${market}`);
+  // const response = await fetch(`https://localhost:8787/api/news/${market}`)
   const data = await response.json();
 
   console.log(response)
@@ -135,7 +136,4 @@ const fullMarket = allMarkets.find(platformMarket => platformMarket.Title.toLowe
       }
     })}
   </div> -->
-  ${
-    fullMarket ? htl.html`<p>Explore the full news feed at <a href="https://exa.ai/search?c=all&q=${market}" class="dotted" target="_blank">Exa</a></p>` : ""
-  }
 </div>
