@@ -173,24 +173,36 @@ const searchMarkets = view(Inputs.search(filteredMarkets, {placeholder: "Search 
 ```
 
 ```js
-  Inputs.button("Download CSV", {
-    value: null,
-    reduce: () => {
-      // Convert searchMarkets to CSV
-      const csv = searchMarkets.map(row => Object.values(row).join(',')).join('\n');
+Inputs.button("Download CSV", {
+  value: null,
+  reduce: () => {
+    // Get the header row from the keys of the first object in searchMarkets
+    const header = Object.keys(searchMarkets[0]).join(',');
 
-      // Create a Blob with the CSV data
-      const blob = new Blob([csv], {type: 'text/csv'});
+    // Change Question and News keys so they aren't objects 
+    searchMarkets.forEach(d => {
+      d.Question = d.Question.Title;
+      d.News = "https://adj.news/feed/news?market=" + d.News.Question;
+    });
 
-      // Create a download link and click it
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      const date = new Date();
-      const dateString = `${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()}`;
-      link.download = `markets-${dateString}.csv`;
-      link.click();
-    }
-  })
+    // Convert searchMarkets to CSV
+    const csv = searchMarkets.map(row => Object.values(row).join(',')).join('\n');
+
+    // Prepend the header row to the CSV data
+    const csvWithHeader = `${header}\n${csv}`;
+
+    // Create a Blob with the CSV data
+    const blob = new Blob([csvWithHeader], {type: 'text/csv'});
+
+    // Create a download link and click it
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    const date = new Date();
+    const dateString = `${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()}`;
+    link.download = `markets-${dateString}.csv`;
+    link.click();
+  }
+})
 ```
 
 <div class="table-responsive">
