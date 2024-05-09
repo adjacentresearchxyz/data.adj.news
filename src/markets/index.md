@@ -110,14 +110,14 @@ const kalshiMarketsClean = kalshiMarkets
     "Probability": ((d.high + d.low) / 2).toFixed(2), // avg. of high and low
     "Question": {
       "Title": d.ticker_name, // @TODO This should be able to be pulled
-      "URL": "https://kalshi.com/markets/" + d.ticker_name,
+      "URL": "https://kalshi.com/markets/" + d.report_ticker,
     },
     "Description": d.report_ticker, // @TODO This should be able to be pulled
     "Forecasts": null,
-    "Link": "https://kalshi.com/markets/" + d.ticker_name,
+    "Link": "https://kalshi.com/markets/" + d.report_ticker,
     "News": {
       "Question": d.ticker_name,
-      "URL": "https://kalshi.com/markets/" + d.ticker_name,
+      "URL": "https://kalshi.com/markets/" + d.report_ticker,
     },
     "Status": d.status,
     "Platform": "Kalshi",
@@ -203,7 +203,7 @@ const searchMarkets = view(Inputs.search(filteredMarkets, {placeholder: "Search 
         "Volume": sparkbar(d3.max(searchMarkets, d => d.volume)),
         "Open Interest": sparkbar(d3.max(searchMarkets, d => d.open_interest)),
         "News": d => htl.html`<div style="display: flex; justify-content: center; align-items: center;">
-          <a href="/feed/news?market=${d.question}">
+          <a href="/feed/news?market=${d.Question}">
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-external-link">
               <path d="M15 3h6v6"/>
               <path d="M10 14 21 3"/>
