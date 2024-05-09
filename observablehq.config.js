@@ -29,8 +29,7 @@ export default {
         <a target="_blank" href="/platforms"><span>Platforms</span></a> /
         <a target="_blank" href="/reporting"><span>Reporting</span></a> /
         <a target="_blank" href="https://api.adj.news"><span>API</span></a> /
-        <a target="_blank" href="https://adjacentresearch.substack.com"><span>Research</span></a> /
-        <a target="_blank" href="https://x.com/0xperp"><span>X</span></a>
+        <a target="_blank" href="https://adjacentresearch.substack.com"><span>Research</span></a>
       </div>
       <p>Updated every 1h. Last Updated at ${new Date().toLocaleString()} (UTC) by <a href="https://x.com/adjacent___" target="_blank">@adjacent___</a></p>
       <p>Disclaimer: This is not financial advice. This is a collection of data from various sources. Please do your own research before making any investment decisions.</p>
