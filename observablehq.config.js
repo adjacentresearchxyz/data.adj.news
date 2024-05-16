@@ -26,9 +26,9 @@ export default {
   ],
   footer: `<div>
       <div>
-        <a target="_blank" href="/platforms"><span>Platforms</span></a> /
-        <a target="_blank" href="/reporting"><span>Reporting</span></a> /
-        <a target="_blank" href="https://api.adj.news"><span>API</span></a> /
+        <a target="_blank" href="/platforms/"><span>Platforms</span></a> /
+        <a target="_blank" href="/reporting/"><span>Reporting</span></a> /
+        <a target="_blank" href="https://api.data.adj.news"><span>API</span></a> /
         <a target="_blank" href="https://adjacentresearch.substack.com"><span>Research</span></a>
       </div>
       <p>Updated every 1h. Last Updated at ${new Date().toLocaleString()} (UTC) by <a href="https://x.com/adjacent___" target="_blank">@adjacent___</a></p>
@@ -177,7 +177,6 @@ a:hover.dotted {
     </svg>
   </a>
     <div>
-      <a href="/markets/" style="margin-left: 2em" class="header">Markets</a>
     </div>
     <div style="display: flex; flex-grow: 1; justify-content: space-between; align-items: baseline;">
   </div>
