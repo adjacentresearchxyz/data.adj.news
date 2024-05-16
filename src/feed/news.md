@@ -6,7 +6,7 @@
 
 ```js
   // Fetch news data
-  const response = await fetch(`https://api.adj.news/api/news/${market}`);
+  const response = await fetch(`https://api.data.adj.news/api/news/${market}`);
   // const response = await fetch(`https://localhost:8787/api/news/${market}`)
   const data = await response.json();
 

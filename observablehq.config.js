@@ -1,6 +1,6 @@
 export default {
   root: "src",
-  title: "adj.news",
+  title: "Adjacent News - Data",
   theme: "midnight",
   pager: false,
   toc: false,
