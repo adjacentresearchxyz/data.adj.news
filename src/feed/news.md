@@ -5,8 +5,13 @@
 ```
 
 ```js
+  // clean up the market query parameter
+  const allowedChars = /[^a-zA-Z0-9 ,.?!]/g;
+  let market_filtered = market.replace(allowedChars, '');
+  market_filtered = market_filtered.trim();
+
   // Fetch news data
-  const response = await fetch(`https://api.data.adj.news/api/news/${market}`);
+  const response = await fetch(`https://api.data.adj.news/api/news/${market_filtered}`);
   // const response = await fetch(`https://localhost:8787/api/news/${market}`)
   const data = await response.json();
 
