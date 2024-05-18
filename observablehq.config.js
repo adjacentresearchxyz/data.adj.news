@@ -1,7 +1,7 @@
 export default {
   root: "src",
   title: "Adjacent News - Data",
-  theme: "midnight",
+  theme: "deep-space",
   pager: false,
   toc: false,
   sidebar: false,
@@ -109,6 +109,25 @@ a:visited.dotted {
 a:hover.dotted {
   border-bottom: 1.5px dotted var(--theme-foreground-muted);
   text-decoration: none;
+}
+
+a {
+  color: var(--theme-foreground-alt);
+  text-decoration: none;
+}
+
+a:link {
+  color: var(--theme-foreground-alt);
+  text-decoration: underline;
+}
+
+a:hover {
+  color: var(--theme-foreground-alt);
+  text-decoration: underline;
+}
+
+a:visited {
+  color: var(--theme-foreground-alt);
 }
 
 .flex {
