@@ -1,6 +1,6 @@
 export default {
   root: "src",
-  title: "Adjacent News - Data",
+  title: "Adjacent Data",
   theme: "deep-space",
   pager: false,
   toc: false,
