@@ -185,6 +185,8 @@ a:visited {
   justify-content: flex-end;
   align-items: center;
   margin-right: 2rem;
+  overflow-x: auto;
+  white-space: nowrap;
 }
 
 .nav-item {
@@ -194,7 +196,7 @@ a:visited {
 
 @media only screen and (max-width: 876px) {
   .nav-item {
-    font-size: 0.75em;
+    font-size: 0.6em;
   }
 }
 
