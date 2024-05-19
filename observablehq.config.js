@@ -29,7 +29,8 @@ export default {
         <a target="_blank" href="/platforms/"><span>Platforms</span></a> /
         <a target="_blank" href="/reporting/"><span>Reporting</span></a> /
         <a target="_blank" href="https://api.data.adj.news"><span>API</span></a> /
-        <a target="_blank" href="https://adjacentresearch.substack.com"><span>Research</span></a>
+        <a target="_blank" href="https://adj.news"><span>News</span></a> /
+        <a target="_blank" href="https://adjacentresearch.substack.com"><span>Press</span></a>
       </div>
       <p>Updated every 1h. Last Updated at ${new Date().toLocaleString()} (UTC) by <a href="https://x.com/adjacent___" target="_blank">@adjacent___</a></p>
       <p>Disclaimer: This is not financial advice. This is a collection of data from various sources. Please do your own research before making any investment decisions.</p>
@@ -167,6 +168,36 @@ a:visited {
   }
 }
 
+/* "Hide" checkbox -- moves it off screen*/
+#menu-btn {
+  position: absolute;
+  top: -100%;
+  left: -100%;
+}
+
+/* Hide hamburger for bigger screens */
+.menu-icon {
+  visibility: hidden;
+}
+
+.menu {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-right: 2rem;
+}
+
+.nav-item {
+  color: var(--theme-foreground);
+  padding-left: 1em;
+}
+
+@media only screen and (max-width: 876px) {
+  .nav-item {
+    font-size: 0.75em;
+  }
+}
+
 </style>
 <div style="display: flex; align-items: center; gap: 0.5rem; height: 2.2rem; margin: -1.5rem -2rem 2rem -2rem; padding: 0.5rem 2rem; border-bottom: solid 1px var(--theme-foreground-faintest); font: 500 16px var(--sans-serif);">
   <a href="/" target="_self" rel="" style="display: flex; align-items: center;" class="header">
@@ -198,6 +229,14 @@ a:visited {
     <div>
     </div>
     <div style="display: flex; flex-grow: 1; justify-content: space-between; align-items: baseline;">
+    <input class="menu-btn" type="checkbox" id="menu-btn" name="menu-btn" />
+    <nav class="menu">
+      <a class="nav-item" href="https://data.adj.news/platforms/" style="text-decoration: none">Platforms</a>
+      <a class="nav-item" href="https://data.adj.news/reporting/" style="text-decoration: none">Reporting</a>
+      <a class="nav-item" href="https://api.data.adj.news" style="text-decoration: none">API</a>
+      <a class="nav-item" href="https://adj.news" style="text-decoration: none">News</a>
+      <a class="nav-item" href="https://press.adjacentresearch.xyz" style="text-decoration: none">Press</a>
+    </nav>
   </div>
 </div>`
 };
