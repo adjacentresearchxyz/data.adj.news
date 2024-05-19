@@ -19,8 +19,8 @@ export default {
       name: "Reporting",
       open: true,
       pages: [
-        {name: "Kalshi Markets", path: "/platforms/kalshi/markets"},
-        {name: "Kalshi Trades", path: "/platforms/kalshi/trades"},
+        { name: "Kalshi Markets", path: "/platforms/kalshi/markets" },
+        { name: "Kalshi Trades", path: "/platforms/kalshi/trades" },
       ]
     }
   ],
@@ -168,16 +168,12 @@ a:visited {
   }
 }
 
-/* "Hide" checkbox -- moves it off screen*/
-#menu-btn {
-  position: absolute;
-  top: -100%;
-  left: -100%;
+.menu-btn {
+  display: none;
 }
 
-/* Hide hamburger for bigger screens */
 .menu-icon {
-  visibility: hidden;
+  cursor: pointer;
 }
 
 .menu {
@@ -187,16 +183,47 @@ a:visited {
   margin-right: 2rem;
   overflow-x: auto;
   white-space: nowrap;
+  opacity: 1;
+  z-index: 9999;
 }
 
 .nav-item {
   color: var(--theme-foreground);
   padding-left: 1em;
+  padding: 1em;
 }
 
-@media only screen and (max-width: 876px) {
-  .nav-item {
-    font-size: 0.6em;
+@media (max-width: 600px) {
+  .menu {
+    display: none;
+    position: absolute;
+    right: 3em;
+    background-color: #000;
+    color: #fff;
+    width: 70%;
+    padding: 2em;
+  }
+  .menu-btn:checked ~ .menu {
+    display: block;
+  }
+}
+
+.menu-icon {
+  grid-area: hamburger;
+  cursor: pointer;
+  display: none;
+  justify-content: flex-end;
+  align-items: baseline;
+  padding: 30px 20px 30px 0;
+  position: relative;
+  user-select: none;
+  visibility: visible;
+}
+
+@media screen and (max-width: 768px) {
+  .menu-icon {
+    display: block;
+    cursor: pointer;
   }
 }
 
@@ -230,15 +257,18 @@ a:visited {
   </a>
     <div>
     </div>
-    <div style="display: flex; flex-grow: 1; justify-content: space-between; align-items: baseline;">
-    <input class="menu-btn" type="checkbox" id="menu-btn" name="menu-btn" />
-    <nav class="menu">
-      <a class="nav-item" href="https://data.adj.news/platforms/" style="text-decoration: none">Platforms</a>
-      <a class="nav-item" href="https://data.adj.news/reporting/" style="text-decoration: none">Reporting</a>
-      <a class="nav-item" href="https://api.data.adj.news" style="text-decoration: none">API</a>
-      <a class="nav-item" href="https://adj.news" style="text-decoration: none">News</a>
-      <a class="nav-item" href="https://press.adjacentresearch.xyz" style="text-decoration: none">Press</a>
-    </nav>
-  </div>
+    <div style="display: flex; flex-grow: 1; justify-content: flex-end; align-items: baseline;">
+      <input class="menu-btn" type="checkbox" id="menu-btn" name="menu-btn" />
+      <label class="menu-icon" for="menu-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+      </label>
+      <nav class="menu">
+        <a class="nav-item" href="https://data.adj.news/platforms/" style="text-decoration: none">Platforms</a>
+        <a class="nav-item" href="https://data.adj.news/reporting/" style="text-decoration: none">Reporting</a>
+        <a class="nav-item" href="https://api.data.adj.news" style="text-decoration: none">API</a>
+        <a class="nav-item" href="https://adj.news" style="text-decoration: none">News</a>
+        <a class="nav-item" href="https://press.adjacentresearch.xyz" style="text-decoration: none">Press</a>
+      </nav>
+    </div>
 </div>`
 };
