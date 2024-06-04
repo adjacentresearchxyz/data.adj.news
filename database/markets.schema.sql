@@ -1,5 +1,6 @@
 CREATE TABLE markets_data (
-    ticker VARCHAR(255) PRIMARY KEY,
+    adj_ticker varchar(255) PRIMARY KEY,
+    ticker VARCHAR(255),
     reported_date DATETIME,
     end_date DATETIME,
     market_slug VARCHAR(255),
@@ -11,6 +12,7 @@ CREATE TABLE markets_data (
     forecasts DECIMAL(10, 2),
     link VARCHAR(255),
     platform VARCHAR(255)
+    status VARCHAR(255)
 );
 
 CREATE TABLE markets_data_raw (

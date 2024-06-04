@@ -64,7 +64,7 @@
 let data = [{}];
 
 async function getData(next_cursor) {
-  const response = await fetch('https://clob.polymarket.com/markets?active=true&_sort=volume:desc&_limit=-1?next_cursor=' + next_cursor, {
+  const markets_response = await fetch('https://clob.polymarket.com/markets?active=true&_sort=volume:desc&_limit=-1?next_cursor=' + next_cursor, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -76,23 +76,46 @@ async function getData(next_cursor) {
     }
   }).then(res => res.json());
 
-  const paginatedData = response.data.map((market) => ({
+  const marketsData = await Promise.all(markets_response.data.map(async (market) => {
+    const trade_response = await fetch(`https://clob.polymarket.com/allTradesForMarket?hash=${market.fpmm}/`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Connection': 'keep-alive',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3',
+        'Accept': 'application/json',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Referer': 'https://polymarket.com/',
+      }
+    }).then(res => res.json());
+  
+    let totalVolume = 0;
+    let uniqueTraders = new Set();
+  
+    trade_response.forEach(trade => {
+      totalVolume += trade.trade_amount;
+      uniqueTraders.add(trade.user.id);
+    });
+  
+    return {
+      "Adj Ticker": "POLYMARKET-" + market.market_slug,
+      "Ticker": market.market_slug,
       "Reported Date": new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '').slice(0, 16),
       "End Date": new Date(market.end_date_iso).toISOString().replace(/T/, ' ').replace(/\..+/, '').slice(0, 16),
       "Market": market.market_slug,
-      "Open Interest": null, // for $ markets, @TODO This should be able to be pulled 
-      "Volume": null, // @TODO This should be able to be pulled 
+      "Open Interest": null, // @TODO should be able to get this
+      "Volume": totalVolume,
       "Probability": market.tokens.map((token) => token.outcome === "Yes" ? token.price : null),
       "Question": market.question,
       "Description": market.description,
-      "Forecasts": null, // for non $ markets
+      "Forecasts": uniqueTraders.size,
       "Link": "https://polymarket.com/market/" + market.market_slug,
-      "News": {
-        "Question": market.question,
-        "URL": "https://polymarket.com/market/" + market.market_slug,
-      }, // in order to render news we need question and url
       "Platform": "Polymarket",
+      "Status": market.active ? "active" : "closed"
+    };
   }));
+
+  console.log(marketsData);
 
   data.push(paginatedData);
 
