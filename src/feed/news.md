@@ -39,7 +39,8 @@ const kalshiMarkets = FileAttachment("../data/kalshi/kalshi-markets.json").json(
 const metaculusMarkets = FileAttachment("../data/metaculus/metaculus-markets.json").json();
 
 // Manifold Markets 
-const manifoldMarkets = FileAttachment("../data/manifold/manifold-markets.json").json();
+const manifoldMarketsZip = FileAttachment("../data/manifold/manifold-markets.zip").zip();
+const manifoldMarkets = FileAttachment("../data/manifold/manifold-markets/markets.json").json();
 
 // Polymarket Markets 
 const polymarketMarkets = FileAttachment("../data/polymarket/polymarket-markets.json").json();
