@@ -11,37 +11,8 @@ const kalshiTrades = FileAttachment("../../data/kalshi/kalshi-trades.json").json
 ```
 
 ```js
-const kalshiMarketsCleanActive = kalshiMarkets
-  .filter(d => d.status === 'active')
-  .map((d) => ({
-    "Date": d.date,
-    "Ticker": d.ticker_name,
-    "Report Ticker": d.report_ticker,
-    "Payout Type": d.payout_type,
-    "Open Interest": d.open_interest,
-    "Daily Volume": d.daily_volume,
-    "Block Volume": d.block_volume,
-    "High": d.high,
-    "Low": d.low,
-    "Status": d.status,
-    "Platform": "Kalshi",
-  }));
-
-const kalshiMarketsCleanFinalized = kalshiMarkets
-  .filter(d => d.status === 'finalized')
-  .map((d) => ({
-    "Date": d.date,
-    "Ticker": d.ticker_name,
-    "Report Ticker": d.report_ticker,
-    "Payout Type": d.payout_type,
-    "Open Interest": d.open_interest,
-    "Daily Volume": d.daily_volume,
-    "Block Volume": d.block_volume,
-    "High": d.high,
-    "Low": d.low,
-    "Status": d.status,
-    "Platform": "Kalshi",
-  }));
+const kalshiMarketsActive = kalshiMarkets.filter(d => d.Status === 'active');
+const kalshiMarketsFinalized = kalshiMarkets.filter(d => d.Status === 'finalized');
 ```
 
 ```js
@@ -80,28 +51,28 @@ const hourFormat = d3.timeFormat("%-I %p");
 ```
 
 ## Kalshi Stats
-<h3>Last reported at <code>${kalshiMarketsCleanActive[0].Date}</code></h3>
+<h3>Last reported at <code>${kalshiMarketsActive[0]['Reported Date']}</code></h3>
 
 <div class="grid grid-cols-4">
   <div class="card" style="color: inherit;">
     <h2>Active Markets</h2>
-    <span class="big">${kalshiMarkets.filter(d => d.status === 'active').length}</span>
+    <span class="big">${kalshiMarkets.filter(d => d.Status === 'active').length}</span>
   </div>
   <div class="card" style="color: inherit;">
     <h2>Open Interest</h2>
-    <span class="big">$${kalshiMarkets.filter(d => d.status === 'active').reduce((sum, market) => sum + market.open_interest, 0).toLocaleString()}</span>
+    <span class="big">$${kalshiMarkets.filter(d => d.Status === 'active').reduce((sum, market) => sum + market['Open Interest'], 0).toLocaleString()}</span>
   </div>
   <div class="card" style="color: inherit;">
     <h2>Daily Volume</h2>
-    <span class="big">$${kalshiMarkets.filter(d => d.status === 'active').reduce((sum, market) => sum + market.daily_volume, 0).toLocaleString()}</span>
+    <span class="big">$${kalshiMarkets.filter(d => d.Status === 'active').reduce((sum, market) => sum + market['Volume'], 0).toLocaleString()}</span>
   </div>
 </div>
 
 ## Active Markets
-<h3>Last reported at <code>${kalshiMarketsCleanActive[0].Date}</code></h3>
+<h3>Last reported at <code>${kalshiMarketsActive[0]['Reported Date']}</code></h3>
 
 ```js
-const searchMarketsActive = view(Inputs.search(kalshiMarketsCleanActive, {placeholder: "Search markets…"}));
+const searchMarketsActive = view(Inputs.search(kalshiMarketsActive, {placeholder: "Search markets…"}));
 ```
 
 ```js
@@ -127,21 +98,31 @@ const searchMarketsActive = view(Inputs.search(kalshiMarketsCleanActive, {placeh
 
 <div class="table-responsive">
   <div class="card" style="padding: 0;">
-    ${Inputs.table(searchMarketsActive, {
-      rows: 30, 
-      sort: "Daily Volume", 
+   ${Inputs.table(searchMarketsActive, {
+      rows: 35, 
+      sort: "Volume", 
       reverse: true,
       layout: "auto",
-      columns: ["Date", "Ticker", "Report Ticker", "Open Interest", "Daily Volume", "Block Volume", "High", "Low", "Platform"],
-      header: {
-        "Report Ticker": "Series"
+      columns: ["News", "Question", "Probability", "Volume", "Open Interest", "Forecasts", "Platform", "Status"],
+      width: {
+        "Question": "25%",
       },
       format: {
-        "Ticker": d => htl.html`<a href="https://kalshi.com/markets/${d}?referral=39c1bef1-c544-4b49-ab85-d336be5dc41c" target="_blank">${d}</a>`,
-        "Report Ticker": d => htl.html`<a href="https://kalshi.com/markets/${d}?referral=39c1bef1-c544-4b49-ab85-d336be5dc41c" target="_blank">${d}</a>`,
+        "Slug": d => htl.html`<a href="${d.url}" target="_blank">${d.slug.substring(0,25)}</a>`,
+        "Question": d => htl.html`<a href="${d.URL}" target="_blank">${d.Title.substring(0,50)}</a>`,
+        "Probability": d => d + "%",
+        "Forecasts": sparkbar(d3.max(searchMarketsActive, d => d["Forecasts"])),
+        "Volume": sparkbar(d3.max(searchMarketsActive, d => d.volume)),
         "Open Interest": sparkbar(d3.max(searchMarketsActive, d => d.open_interest)),
-        "Daily Volume": sparkbar(d3.max(searchMarketsActive, d => d.daily_volume)),
-        "Block Volume": sparkbar(d3.max(searchMarketsActive, d => d.block_volume)),
+        "News": d => htl.html`<div style="display: flex; justify-content: center; align-items: center;">
+          <a href="/feed/news?market=${d.Question}">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-external-link">
+              <path d="M15 3h6v6"/>
+              <path d="M10 14 21 3"/>
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+            </svg>
+          </a>
+        </div>`,
       }
     })}
   </div>

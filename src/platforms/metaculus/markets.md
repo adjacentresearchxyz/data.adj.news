@@ -8,26 +8,6 @@ const metaculusMarkets = FileAttachment("../../data/metaculus/metaculus-markets.
 ```
 
 ```js
-const metaculusMarketsClean = metaculusMarkets.data.questions.edges
-  .filter(d => d.node.options)
-  .filter(d => d.node.options.length === 2) // binary markets
-  .filter(d => d.node.options.every(o => o.probability !== null)) // all probabilities
-  .filter(d => d.node.description) // description
-  .map((d) => ({
-    "Date": d.node.fetchedStr,
-    "ID": d.node.id,
-    "Title": d.node.title,
-    "News": d.node.title,
-    // "Link": d.node.url,
-    "Yes": d.node.options[0].probability,
-    "No": d.node.options[1].probability,
-    "Forecasts": d.node.qualityIndicators.numForecasts,
-    "Stars": d.node.qualityIndicators.stars,
-    "Platform": "Metaculus",
-  }));
-```
-
-```js
 function sparkbar(max) {
   return (x) => htl.html`<div style="
     background: var(--theme-blue);
@@ -50,10 +30,10 @@ const hourFormat = d3.timeFormat("%-I %p");
 ```
 
 ## Markets
-<h3>Last reported at <code>${metaculusMarketsClean[0].Date}</code></h3>
+<h3>Last reported at <code>${metaculusMarkets[0]["Reported Date"]}</code></h3>
 
 ```js
-const searchMarkets = view(Inputs.search(metaculusMarketsClean, {placeholder: "Search markets…"}));
+const searchMarkets = view(Inputs.search(metaculusMarkets, {placeholder: "Search markets…"}));
 ```
 
 ```js
@@ -79,21 +59,24 @@ const searchMarkets = view(Inputs.search(metaculusMarketsClean, {placeholder: "S
 
 <div class="table-responsive">
   <div class="card" style="padding: 0;">
-    ${Inputs.table(searchMarkets, {
-      rows: 30, 
-      sort: "Forecasts", 
+ ${Inputs.table(searchMarkets, {
+      rows: 35, 
+      sort: "Volume", 
       reverse: true,
       layout: "auto",
+      columns: ["News", "Question", "Probability", "Volume", "Open Interest", "Forecasts", "Platform", "Status"],
+      width: {
+        "Question": "25%",
+      },
       format: {
-        "ID": d => {
-          const splitID = d.split('-');
-          const baseURL = splitID[0] === 'goodjudgmentopen' ? 'https://www.gjopen.com/questions/' : 'https://www.metaculus.com/questions/';
-          return htl.html`<a href="${baseURL}${splitID[1]}" target="_blank">${d}</a>`;
-        },
-        "Title": d => d.substring(0, 50) + "...",
-        "Forecasts": sparkbar(d3.max(searchMarkets, d => d.numForecasts)),
+        "Slug": d => htl.html`<a href="${d.url}" target="_blank">${d.slug.substring(0,25)}</a>`,
+        "Question": d => htl.html`<a href="${d.URL}" target="_blank">${d.Title.substring(0,50)}</a>`,
+        "Probability": d => d + "%",
+        "Forecasts": sparkbar(d3.max(searchMarkets, d => d["Forecasts"])),
+        "Volume": sparkbar(d3.max(searchMarkets, d => d.volume)),
+        "Open Interest": sparkbar(d3.max(searchMarkets, d => d.open_interest)),
         "News": d => htl.html`<div style="display: flex; justify-content: center; align-items: center;">
-          <a href="/feed/news?market=${d}">
+          <a href="/feed/news?market=${d.Question}">
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-external-link">
               <path d="M15 3h6v6"/>
               <path d="M10 14 21 3"/>
@@ -101,7 +84,6 @@ const searchMarkets = view(Inputs.search(metaculusMarketsClean, {placeholder: "S
             </svg>
           </a>
         </div>`,
-        "Date": d => d.substring(0, 10),
       }
     })}
   </div>
