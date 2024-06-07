@@ -4,7 +4,8 @@
 //
 
 // Manifold Markets 
-const manifoldMarkets = FileAttachment("../../data/manifold/manifold-markets.json").json();
+const manifoldMarketsZip = FileAttachment("../../data/manifold/manifold-markets.zip").zip();
+const manifoldMarkets = FileAttachment("../../data/manifold/manifold-markets/markets.json").json();
 ```
 
 ```js
