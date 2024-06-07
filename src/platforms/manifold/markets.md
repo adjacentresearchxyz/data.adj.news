@@ -8,27 +8,6 @@ const manifoldMarkets = FileAttachment("../../data/manifold/manifold-markets.jso
 ```
 
 ```js
-const manifoldMarketsClean = manifoldMarkets
-  .filter(d => d.volume > 0) // Filter out markets with no volume
-  .filter(d => d.probability > 0) // Filter out markets with no probability
-  .map((d) => ({
-    "Slug": {
-        "slug": d.slug,
-        "url": d.url,
-    },
-    "Question": d.question,
-    "News": {
-      "question": d.question,
-      "url": d.url,
-    },
-    "Probability": d.probability,
-    "Unique Bettor Count": d.uniqueBettorCount,
-    "Volume": d.volume,
-    "Platform": "Manifold",
-  }));
-```
-
-```js
 function sparkbar(max) {
   return (x) => htl.html`<div style="
     background: var(--theme-blue);
@@ -54,7 +33,7 @@ const hourFormat = d3.timeFormat("%-I %p");
 <h3>Last reported at <code>${new Date().toLocaleDateString()}</code></h3>
 
 ```js
-const searchMarkets = view(Inputs.search(manifoldMarketsClean, {placeholder: "Search markets…"}));
+const searchMarkets = view(Inputs.search(manifoldMarkets, {placeholder: "Search markets…"}));
 ```
 
 ```js
@@ -80,18 +59,24 @@ const searchMarkets = view(Inputs.search(manifoldMarketsClean, {placeholder: "Se
 
 <div class="table-responsive">
   <div class="card" style="padding: 0;">
-    ${Inputs.table(searchMarkets, {
-      rows: 30, 
+${Inputs.table(searchMarkets, {
+      rows: 35, 
       sort: "Volume", 
       reverse: true,
       layout: "auto",
+      columns: ["News", "Question", "Probability", "Volume", "Open Interest", "Forecasts", "Platform", "Status"],
+      width: {
+        "Question": "25%",
+      },
       format: {
         "Slug": d => htl.html`<a href="${d.url}" target="_blank">${d.slug.substring(0,25)}</a>`,
-        "Question": d => d.substring(0,50) + "...",
-        "Unique Bettor Count": sparkbar(d3.max(searchMarkets, d => d["Unique Bettor Count"])),
+        "Question": d => htl.html`<a href="${d.URL}" target="_blank">${d.Title.substring(0,50)}</a>`,
+        "Probability": d => d + "%",
+        "Forecasts": sparkbar(d3.max(searchMarkets, d => d["Forecasts"])),
         "Volume": sparkbar(d3.max(searchMarkets, d => d.volume)),
+        "Open Interest": sparkbar(d3.max(searchMarkets, d => d.open_interest)),
         "News": d => htl.html`<div style="display: flex; justify-content: center; align-items: center;">
-          <a href="/feed/news?market=${d.question}">
+          <a href="/feed/news?market=${d.Question}">
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-external-link">
               <path d="M15 3h6v6"/>
               <path d="M10 14 21 3"/>

@@ -17,35 +17,6 @@ const polymarketMarkets = FileAttachment("../data/polymarket/polymarket-markets.
 ```
 
 ```js
-const metaculusMarketsClean = metaculusMarkets.data.questions.edges
-  .filter(d => d.node.options)
-  .filter(d => d.node.options.length === 2) // binary markets
-  .filter(d => d.node.options.every(o => o.probability !== null)) // all probabilities
-  .filter(d => d.node.description) // description
-  .map((d) => ({
-    "Reported Date": new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '').slice(0, 16),
-    "End Date": null,
-    "Market": d.node.id,
-    "Open Interest": null,
-    "Volume": null,
-    "Probability": (d.node.options[0].probability * 100).toFixed(2),
-    "Question": {
-      "Title": d.node.title,
-      "URL": d.node.url,
-    },
-    "Description": d.node.description,
-    "Forecasts": d.node.qualityIndicators.numForecasts,
-    "Link": d.node.url,
-    "News": {
-      "Question": d.node.title,
-      "URL": d.node.url,
-    },
-    "Status": null, // @TODO This should be able to be pulled
-    "Platform": "Metaculus",
-  }));
-```
-
-```js
 const manifoldMarketsClean = manifoldMarkets
   .filter(d => d.volume > 0) // Filter out markets with no volume
   .filter(d => d.probability > 0) // Filter out markets with no probability
@@ -126,7 +97,7 @@ const kalshiMarketsClean = kalshiMarkets
 
 ```js
 // Aggregate all markets
-const allMarkets = [...kalshiMarketsClean, ...polymarketMarketsClean, ...metaculusMarketsClean, ...manifoldMarketsClean];
+const allMarkets = [...kalshiMarketsClean, ...polymarketMarketsClean, ...metaculusMarkets, ...manifoldMarketsClean];
 ```
 
 ```js

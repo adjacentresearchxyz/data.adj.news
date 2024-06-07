@@ -8,25 +8,6 @@ const polymarketMarkets = FileAttachment("../../data/polymarket/polymarket-marke
 ```
 
 ```js
-const polymarketMarketsClean = polymarketMarkets.data
-  .filter(d => d.active) // Filter out inactive markets
-  .filter(d => !d.archived) // Filter out archived markets
-  .map((d) => ({
-    "Date": new Date().toLocaleDateString(),
-    "ID": d.market_slug,
-    "Title": d.question,
-    "News": d.question,
-    "Description": d.description,
-    "Yes": d.tokens[0].price,
-    "No": d.tokens[1].price,
-    // "Active": d.active,
-    // "Closed": d.closed,
-    // "Archived": d.archived,
-    "Platform": "Polymarket",
-  }));
-```
-
-```js
 function sparkbar(max) {
   return (x) => htl.html`<div style="
     background: var(--theme-blue);
@@ -52,7 +33,7 @@ const hourFormat = d3.timeFormat("%-I %p");
 <h3>Last reported at <code>${new Date().toLocaleDateString()}</code></h3>
 
 ```js
-const searchMarkets = view(Inputs.search(polymarketMarketsClean, {placeholder: "Search markets…"}));
+const searchMarkets = view(Inputs.search(polymarketMarkets, {placeholder: "Search markets…"}));
 ```
 
 ```js
@@ -79,16 +60,23 @@ const searchMarkets = view(Inputs.search(polymarketMarketsClean, {placeholder: "
 <div class="table-responsive">
   <div class="card" style="padding: 0;">
     ${Inputs.table(searchMarkets, {
-      rows: 30, 
-      sort: "Forecasts", 
+      rows: 35, 
+      sort: "Volume", 
       reverse: true,
       layout: "auto",
+      columns: ["News", "Question", "Probability", "Volume", "Open Interest", "Forecasts", "Platform", "Status"],
+      width: {
+        "Question": "25%",
+      },
       format: {
-        "Title": d => d.substring(0, 50) + "...",
-        "Description": d => d.substring(0, 50) + "...",
-        "ID": d => htl.html`<a href="https://polymarket.com/event/${d}" target="_blank">${d.substring(0,15) + "..."}</a>`,
+        "Slug": d => htl.html`<a href="${d.url}" target="_blank">${d.slug.substring(0,25)}</a>`,
+        "Question": d => htl.html`<a href="${d.URL}" target="_blank">${d.Title.substring(0,50)}</a>`,
+        "Probability": d => d + "%",
+        "Forecasts": sparkbar(d3.max(searchMarkets, d => d["Forecasts"])),
+        "Volume": sparkbar(d3.max(searchMarkets, d => d.volume)),
+        "Open Interest": sparkbar(d3.max(searchMarkets, d => d.open_interest)),
         "News": d => htl.html`<div style="display: flex; justify-content: center; align-items: center;">
-          <a href="/feed/news?market=${d}">
+          <a href="/feed/news?market=${d.Question}">
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-external-link">
               <path d="M15 3h6v6"/>
               <path d="M10 14 21 3"/>
