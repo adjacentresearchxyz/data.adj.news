@@ -16,7 +16,9 @@ async function fetchAllMarkets() {
       allMarkets = allMarkets.concat(data.data);
     }
   
-    return allMarkets.map((d) => ({
+    return allMarkets
+      .filter(d => d.tokens[0].price != null)
+      .map((d) => ({
       "Reported Date": new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '').slice(0, 16),
       "End Date": d.end_date_iso ? new Date(d.end_date_iso).toISOString().replace(/T/, ' ').replace(/\..+/, '').slice(0, 16) : null,
       "Market": d.market_slug,
