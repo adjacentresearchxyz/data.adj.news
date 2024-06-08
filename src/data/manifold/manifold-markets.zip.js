@@ -5,26 +5,28 @@ async function fetchAllMarkets() {
   let lastId;
   let allMarkets = [];
 
-  // while (true) {
-  const url = `https://api.manifold.markets/v0/markets?limit=1000${lastId ? `&before=${lastId}` : ''}`;
-  const response = await fetch(url);
-  const data = await response.json();
+  while (true) {
+    const url = `https://api.manifold.markets/v0/markets?limit=1000${lastId ? `&before=${lastId}` : ''}`;
+    const response = await fetch(url);
+    const data = await response.json();
 
-  // if (data.length < 1000) {
-  //   allMarkets = allMarkets.concat(data);
-  //   break;
-  // }
+    if (data.length < 1000) {
+      allMarkets = allMarkets.concat(data);
+      break;
+    }
 
-  lastId = data[data.length - 1].id;
-  allMarkets = allMarkets.concat(data);
-  // }
+    lastId = data[data.length - 1].id;
+    allMarkets = allMarkets.concat(data);
+  }
 
-  return allMarkets.map((d) => ({
+  return allMarkets
+    .filter(d => d.probability != null)
+    .map((d) => ({
     "Reported Date": new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '').slice(0, 16),
     "End Date": null,
     "Market": d.slug,
     "Open Interest": null,
-    "Volume": d.volume,
+    "Volume": d.volume / 1000, // MANA is 1/1000 in USD if converted
     "Probability": isNaN(d.probability * 100) ? "" : (d.probability * 100).toFixed(2),
     "Question": {
       "Title": d.question,
