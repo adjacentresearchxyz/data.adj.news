@@ -21,6 +21,9 @@ async function fetchAllMarkets() {
 
   return allMarkets
     .filter(d => d.probability != null)
+    .filter(d => d.volume > 0)
+    .filter(d => d.uniqueBettorCount > 0)
+    .filter(d => d.isResolved === false) // @TODO as we move into using a DB we can support finalized markets
     .map((d) => ({
     "Reported Date": new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '').slice(0, 16),
     "End Date": null,

@@ -1,10 +1,18 @@
 const currentDate = new Date();
 const previousDate = new Date();
-previousDate.setDate(currentDate.getDate() - 1);
+
+// Adjust the current date to UTC-0
+currentDate.setHours(currentDate.getHours() - currentDate.getTimezoneOffset() / 60);
+
+// If the current time is before 8a UTC-0, use the data from two days ago
+if (currentDate.getUTCHours() < 24) {
+  previousDate.setDate(currentDate.getDate() - 2);
+} else {
+  previousDate.setDate(currentDate.getDate() - 1);
+}
 
 const urlCurrentDate = `https://kalshi-public-docs.s3.amazonaws.com/reporting/market_data_${currentDate.toISOString().slice(0,10)}.json`;
 const urlPreviousDate = `https://kalshi-public-docs.s3.amazonaws.com/reporting/market_data_${previousDate.toISOString().slice(0,10)}.json`;
-
 fetch(urlCurrentDate)
   .then(response => {
     if (response.ok) {
