@@ -105,26 +105,17 @@ Inputs.button("Download CSV", {
       sort: "Volume", 
       reverse: true,
       layout: "auto",
-      columns: ["News", "Question", "Probability", "Volume", "Open Interest", "Forecasts", "Platform", "Status"],
+      columns: ["Question", "Probability", "Volume", "Open Interest", "Forecasts", "Platform", "Status"],
       width: {
         "Question": "25%",
       },
       format: {
         "Slug": d => htl.html`<a href="${d.url}" target="_blank">${d.slug.substring(0,25)}</a>`,
-        "Question": d => htl.html`<a href="${d.URL}" target="_blank">${d.Title.substring(0,50)}</a>`,
-        "Probability": d => d + "%",
+        "Question": d => htl.html`<a href="/explore/market?question=${d.Title}" target="_blank">${d.Title.substring(0,50)}</a>`,
+        "Probability": d => (Number(d).toFixed(2) + "%"),
         "Forecasts": sparkbar(d3.max(searchMarkets, d => d["Forecasts"])),
         "Volume": sparkbar(d3.max(searchMarkets, d => d.volume)),
         "Open Interest": sparkbar(d3.max(searchMarkets, d => d.open_interest)),
-        "News": d => htl.html`<div style="display: flex; justify-content: center; align-items: center;">
-          <a href="/feed/news?market=${d.Question}">
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-external-link">
-              <path d="M15 3h6v6"/>
-              <path d="M10 14 21 3"/>
-              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-            </svg>
-          </a>
-        </div>`,
       }
     })}
   </div>

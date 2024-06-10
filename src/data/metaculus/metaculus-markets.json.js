@@ -1,77 +1,62 @@
-// Fetch data from the API
-fetch('https://metaforecast.org/api/graphql', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({
-    query: `
-      {
-        questions(first: 100000 orderBy: FIRST_SEEN_DESC) {
-          edges {
-            node {
-              id
-              platform {
-                id
-              }
-              title
-              url
-              description
-              options {
-                name
-                probability
-              }
-              qualityIndicators {
-                numForecasts
-                stars
-              }
-              firstSeenStr
-              fetchedStr
-            }
-          }
-          pageInfo {
-            endCursor
-            startCursor
-          }
-        }
-      }
-    `,
-  }),
-})
-.then(response => response.json())
-.then(data => {
-  // Filter and map the data
-  const filteredData = data.data.questions.edges
-    .filter(d => d.node.platform.id === 'metaculus')
-    .filter(d => d.node.options)
-    .filter(d => d.node.options.length === 2) // binary markets
-    .filter(d => d.node.options.every(o => o.probability !== null)) // all probabilities
-    .filter(d => d.node.description) // description
-    .map((d) => ({
-      "Reported Date": new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '').slice(0, 16),
-      "End Date": null,
-      "Market": d.node.id,
-      "Open Interest": null,
-      "Volume": null,
-      "Probability": (d.node.options[0].probability * 100).toFixed(2),
-      "Question": {
-        "Title": d.node.title,
-        "URL": d.node.url,
-      },
-      "Description": d.node.description,
-      "Forecasts": d.node.qualityIndicators.numForecasts,
-      "Link": d.node.url,
-      "News": {
-        "Question": d.node.title,
-        "URL": d.node.url,
-      },
-      "Status": "active", // @TODO This should be able to be pulled
-      "Platform": "Metaculus",
-    }));
+import fs from 'fs/promises';
+import path from 'path';
 
-  // Write the data to a stdout
-  process.stdout.write(JSON.stringify(filteredData, null, 2));
-})
-.catch(error => {
-  console.error('Error:', error);
-});
+// Function to fetch data from the API
+async function fetchData(url) {
+  const response = await fetch(url);
+  const data = await response.json();
+
+  // If there is a next page, fetch it
+  if (data.next) {
+    const nextPageData = await fetchData(data.next);
+    return data.results.concat(nextPageData);
+  } else {
+    return data.results;
+  }
+}
+
+// Start fetching data
+async function fetchAndProcessData() {
+  try {
+    const data = await fetchData('https://www.metaculus.com/api2/questions?limit=100&status=open');
+    
+    // Filter and map the data
+    const filteredData = data
+      .filter(d => d.possibilities.type === 'binary') // @TODO for now only binary markets
+      .filter(d => d.number_of_forecasters > 0)
+      .filter(d => d.prediction_count > 0)
+      .filter(d => d.possibilities && d.possibilities.type === 'binary') // only support binary markets rn
+      .map((d) => ({
+        "Reported Date": new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '').slice(0, 16),
+        "End Date": d.close_time,
+        "Market": d.id,
+        "Open Interest": null, // not a real money market
+        "Volume": d.prediction_count, // @TODO how to map this into real money
+        "Probability": (d.community_prediction.full.q2 * 100).toFixed(2), // charts are split into q1, q2, q3 with q2 being the median
+        "Question": {
+          "Title": d.title,
+          "URL": "https://www.metaculus.com/" + d.page_url,
+        },
+        "Description": d.description,
+        "Forecasts": d.number_of_forecasters,
+        "Link": d.page_url,
+        "News": {
+          "Question": d.title,
+          "URL": "https://www.metaculus.com/" + d.page_url,
+        },
+        "Status": d.active_state === 'RESOLVED' ? 'finalized' : 'active',
+        "Platform": "Metaculus",
+      }));
+
+    // Load a local file and append it 
+    const collection = JSON.parse(await fs.readFile(path.resolve('src/data/metaculus/resolvedData.json'), 'utf-8'));
+    const finalData = filteredData.concat(collection);
+
+    // Write the data to a stdout
+    process.stdout.write(JSON.stringify(finalData, null, 2));
+  } catch (error) {
+    console.error('Error:', error);
+  }
+}
+
+fetchAndProcessData();

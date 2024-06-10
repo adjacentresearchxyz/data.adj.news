@@ -71,7 +71,7 @@ const searchMarkets = view(Inputs.search(metaculusMarkets, {placeholder: "Search
       format: {
         "Slug": d => htl.html`<a href="${d.url}" target="_blank">${d.slug.substring(0,25)}</a>`,
         "Question": d => htl.html`<a href="${d.URL}" target="_blank">${d.Title.substring(0,50)}</a>`,
-        "Probability": d => d + "%",
+        "Probability": d => (Number(d).toFixed(2) + "%"),
         "Forecasts": sparkbar(d3.max(searchMarkets, d => d["Forecasts"])),
         "Volume": sparkbar(d3.max(searchMarkets, d => d.volume)),
         "Open Interest": sparkbar(d3.max(searchMarkets, d => d.open_interest)),

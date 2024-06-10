@@ -8,10 +8,11 @@ const kalshiMarkets = FileAttachment("../data/kalshi/kalshi-markets.json").json(
 
 // Metaculus Markets 
 const metaculusMarkets = FileAttachment("../data/metaculus/metaculus-markets.json").json();
+const metaculusOldData = FileAttachment("../data/metaculus/resolvedData.json").json();
 
 // Manifold Markets 
-const manifoldMarketsZip = FileAttachment("../../data/manifold/manifold-markets.zip").zip();
-const manifoldMarkets = FileAttachment("../../data/manifold/manifold-markets/markets.json").json();
+const manifoldMarketsZip = FileAttachment("../data/manifold/manifold-markets.zip").zip();
+const manifoldMarkets = FileAttachment("../data/manifold/manifold-markets/markets.json").json();
 
 // Polymarket Markets 
 const polymarketMarkets = FileAttachment("../data/polymarket/polymarket-markets.json").json();
