@@ -14,17 +14,8 @@
   const response = await fetch(`https://api.data.adj.news/api/news/${market_filtered}`);
   // const response = await fetch(`https://localhost:8787/api/news/${market}`)
   const data = await response.json();
-
-  const news = await data.results
-  .filter(result => result.title)
-  .map(result => ({
-    Article: {
-      title: result.title,
-      url: result.url
-    },
-    Published: result.publishedDate,
-    Source: result.author
-  }))
+  const news = data.results;
+  console.log(news)
 ```
 
 ```js
@@ -137,20 +128,18 @@ function trend(v) {
 ```
 
 <style>
-  ul {
-    list-style-type: none;
+  .card {
     width: 20%;
-    margin: auto;
-    padding: 0;
   }
   .news-item {
-    width: 50%;
-    border: 1px dotted #d3d3d3;
-    border-radius: 7px;
-    padding: 5px;
-    margin-bottom: 10px;
+    /* width: 50%; */
+    /* border: 1px dotted #d3d3d3; */
+    /* border-radius: 7px; */
+    padding: 0;
+    margin: 0;
+    margin-bottom: 5px;
     background-color: rgba(0, 0, 0, 0.5);
-    font-family: Arial, sans-serif;
+    font-family: monospace, sans-serif;
     color: #fff;
   }
   .news-item a {
@@ -182,8 +171,23 @@ function trend(v) {
     fullMarket ? htl.html`<h1><a href="${fullMarket.Link}" class="dotted" target="_blank">${market}</a></h1>` : ""
   }
 
-<div class="grid grid-cols-2-3" style="margin-top: 2rem;">
-  <div class="card">${frmCard(fullMarket)}</div>
+  <div class="card">${fullMarket.Probability}% Probability</div>
+
+  <h2>News</h2>
+  Powered by <a href="https://exa.ai" target="_blank" class="dotted">Exa</a>
+  <br />
+  <div style="margin-left: -1em;">
+    <ul>
+      ${news.map(d => htl.html`
+        <li class="news-item">
+          <a href="${d.url}" target="_blank">${d.title}</a>
+        </li>
+      `)}
+    </ul>
+  </div>
+
+<!-- <div class="grid grid-cols-2-3" style="margin-top: 2rem;"> -->
+  <!-- <div class="card">${fullMarket.Probability}</div> -->
   <!-- <div class="card grid-colspan-2 grid-rowspan-2" style="display: flex; flex-direction: column;">
     <h2>Rates ${startEnd === defaultStartEnd ? "over the past year" : startEnd.map((d) => d.toLocaleDateString("en-US")).join("–")}</h2><br>
     <span style="flex-grow: 1;">${resize((width, height) =>
@@ -198,7 +202,7 @@ function trend(v) {
       })
     )}</span>
   </div> -->
-</div>
+<!-- </div> -->
 
 <!-- <div class="grid">
   <div class="card">
@@ -244,15 +248,4 @@ function trend(v) {
     )}
   </div>
 </div> -->
-  <h2>News</h2>
-  Powered by <a href="https://exa.ai" target="_blank" class="dotted">Exa</a>
-  <br />
-  <br />
-  <div>
-    ${news.map(d => htl.html`
-      <div class="news-item">
-        <a href="${d.Article.url}" target="_blank">${d.Article.title}</a>
-      </div>
-    `)}
-  </div>
 </div>
