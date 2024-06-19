@@ -16,6 +16,15 @@
   const data = await response.json();
 
   const news = await data.results
+  .filter(result => result.title)
+  .map(result => ({
+    Article: {
+      title: result.title,
+      url: result.url
+    },
+    Published: result.publishedDate,
+    Source: result.author
+  }))
 ```
 
 ```js
@@ -66,7 +75,7 @@ function frmCard(market) {
   // <h2 style="color: ${market.Question.Title}</b></h2>
 
   return html.fragment`
-    <h1>${formatPercent(market.Probability)} Probability</h1>
+    <h1>${formatPercent(market.Probability)}</h1>
   `;
 }
 
@@ -242,7 +251,7 @@ function trend(v) {
   <div>
     ${news.map(d => htl.html`
       <div class="news-item">
-        <a href="${d.url}" target="_blank">${d.title}</a>
+        <a href="${d.Article.url}" target="_blank">${d.Article.title}</a>
       </div>
     `)}
   </div>
