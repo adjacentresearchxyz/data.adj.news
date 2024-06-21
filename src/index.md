@@ -23,100 +23,166 @@ const allMarkets = [...kalshiMarkets, ...polymarketMarkets, ...metaculusMarkets,
 ```
 
 ```js
-function sparkbar(max) {
-  return (x) => htl.html`<div style="
-    background: var(--theme-blue);
-    color: black;
-    font: 10px/1.6 var(--sans-serif);
-    width: ${100 * x / max}%;
-    float: right;
-    padding-right: 3px;
-    box-sizing: border-box;
-    overflow: visible;
-    display: flex;
-    justify-content: end;">${x.toLocaleString("en-US")}`
+  // Get the search query parameter from the URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const query = urlParams.get('q');
+```
+
+<style>
+    .search-results {
+        text-align: center; /* Center content horizontally */
+    }
+    .container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh; /* Adjust the height as needed */
+    }
+
+    input {
+        font-family: monospace, sans-serif;
+        width: 35%; /* Corrected width to 35% */
+        height: 44px;
+        padding: 10px 20px;
+        font-size: 16px;
+        border: 1px solid #dfe1e5;
+        border-radius: 24px;
+        box-shadow: 0 1px 6px rgba(32,33,36,0.28);
+        margin-bottom: 20px;
+    }
+
+    input:focus {
+        outline: none;
+        box-shadow: 0 1px 6px rgba(32,33,36,0.28), 0 0 0 2px rgba(26,115,232,0.3);
+        border-color: transparent;
+    }
+
+    output {
+        display: none;
+    }
+
+.news-card {
+    background-color: #ffffff;
+    opacity: 85%;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    max-width: 300px;
+    width: 100%;
+    margin: 0 auto;
+    display: inline-block;
+    height: 10em;
+    position: relative;
+    z-index: 1;
+}
+
+.news-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: -1;
+    background-image: 
+        radial-gradient(circle, #0003 1px, transparent 1px),
+        radial-gradient(circle, #0003 1px, #fff 1px);
+    background-size: 10px 10px;
+    background-position: 0 0, 5px 5px;
+    opacity: 0.2;
+}
+
+    .news-content {
+        margin: 1em;
+    }
+    .news-category {
+        font-size: 0.8em;
+        color: #0066cc;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+    }
+    .news-title {
+        font-size: 1.4em;
+        margin: 0 0 10px 0;
+        color: #333;
+        text-align: left;
+    }
+    .news-title a {
+        color: #333;
+    }
+    .news-description {
+        font-size: 0.9em;
+        color: #666;
+        margin-bottom: 15px;
+        line-height: 1.4;
+        text-align: left;
+    }
+    .news-metadata {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.8em;
+        color: #888;
+    }
+    .news-metadata a {
+        color: #333;
+    }
+</style>
+
+```js
+function formatNumber(num) {
+  if (num >= 1000) {
+    return (num / 1000).toFixed(1) + 'k';
+  } else {
+    return num.toString();
+  }
 }
 ```
 
 ```js
-// Date/time format/parse
-const timeParse = d3.utcParse("%Y-%m-%dT%H");
-const hourFormat = d3.timeFormat("%-I %p");
-```
+function shuffle(array) {
+  let currentIndex = array.length, randomIndex;
 
-## Markets
+  // While there remain elements to shuffle...
+  while (currentIndex != 0) {
 
-```js
-// Active Markets Toggle
-const  marketStatus = view(Inputs.toggle({label: "Only Active Markets", value: true, description: "Toggle to show only active markets"}));
+    // Pick a remaining element...
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
 
-// Platform Filter
-const marketPlatforms = allMarkets.map(d => d.Platform).filter((v, i, a) => a.indexOf(v) === i)
-const platformFilter = view(Inputs.select(["All", ...marketPlatforms], {label: "Platforms", value: "All"}));
-```
-
-```js
-// if marketStatus is true, filter out the finalized markets
-let filteredMarkets = allMarkets.filter(d => marketStatus ? d.Status === "active" | d.Status === null : true);
-
-// if platformFilter is not "All", filter out the markets that don't match the platform
-filteredMarkets = filteredMarkets.filter(d => platformFilter === "All" ? true : d.Platform === platformFilter);
-
-const searchMarkets = view(Inputs.search(filteredMarkets, {placeholder: "Search markets…"}));
-```
-
-```js
-Inputs.button("Download CSV", {
-  value: null,
-  reduce: () => {
-    // Get the header row from the keys of the first object in searchMarkets
-    const header = Object.keys(searchMarkets[0]).join(',');
-
-    // Change Question and News keys so they aren't objects 
-    searchMarkets.forEach(d => {
-      d.Question = d.Question.Title;
-      d.News = "https://adj.news/feed/news?market=" + d.News.Question;
-    });
-
-    // Convert searchMarkets to CSV
-    const csv = searchMarkets.map(row => Object.values(row).join(',')).join('\n');
-
-    // Prepend the header row to the CSV data
-    const csvWithHeader = `${header}\n${csv}`;
-
-    // Create a Blob with the CSV data
-    const blob = new Blob([csvWithHeader], {type: 'text/csv'});
-
-    // Create a download link and click it
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    const date = new Date();
-    const dateString = `${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()}`;
-    link.download = `markets-${dateString}.csv`;
-    link.click();
+    // And swap it with the current element.
+    [array[currentIndex], array[randomIndex]] = [
+      array[randomIndex], array[currentIndex]];
   }
-})
+
+  return array;
+}
+
 ```
 
-<div class="table-responsive">
-  <div class="card" style="padding: 0;">
-    ${Inputs.table(searchMarkets, {
-      rows: 35, 
-      sort: "Volume", 
-      reverse: true,
-      layout: "auto",
-      columns: ["Question", "Probability", "Volume", "Open Interest", "Forecasts", "Platform", "Status"],
-      width: {
-        "Question": "25%",
-      },
-      format: {
-        "Slug": d => htl.html`<a href="${d.url}" target="_blank">${d.slug.substring(0,25)}</a>`,
-        "Question": d => htl.html`<a href="/explore/market?question=${d.Title}" target="_blank">${d.Title.substring(0,50)}</a>`,
-        "Probability": d => (Number(d).toFixed(2) + "%"),
-        "Forecasts": sparkbar(d3.max(searchMarkets, d => d["Forecasts"])),
-        "Volume": sparkbar(d3.max(searchMarkets, d => d.volume)),
-        "Open Interest": sparkbar(d3.max(searchMarkets, d => d.open_interest)),
-      }
-    })}
-  </div>
+```js
+let filteredMarkets = allMarkets.filter(d => d.Status ? d.Status === "active" | d.Status === null : true);
+const searchMarkets = view(Inputs.search(filteredMarkets, {
+    placeholder: `Search ${formatNumber(filteredMarkets.length)} prediction markets`,
+    width: "90%",
+    query: query
+}));
+```
+
+<div class="search-results" style="color: green">
+  ${shuffle(searchMarkets).slice(0, 21).map(market => htl.html`
+    <div class="news-card">
+        <div class="news-content">
+            <h2 class="news-title">
+                <a href="https://data.adj.news/explore/market?question=${market.Question.Title}">
+                    ${market.Question.Title.length > 34 ? market.Question.Title.substring(0, 34) + "..." : market.Question.Title}
+                </a>
+            </h2>
+            <p class="news-description">${Number(market.Probability).toFixed(2)}% Probability</p>
+            <div class="news-metadata">
+                <a class="news-author" href="${market.Question.URL}" target="_blank" rel="noopener noreferrer">${market.Platform}</a>
+                ${market.Volume && market.Forecasts ? htl.html`<span class="news-date">${market.Volume.toFixed(2)} volume / ${market.Forecasts} Forecasters</span>` : ''}
+            </div>
+        </div>
+    </div>
+  `)}
 </div>
