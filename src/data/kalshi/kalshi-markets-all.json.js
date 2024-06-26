@@ -34,7 +34,13 @@ let data = [];
 async function getDatedData(date) {
   console.log(`Fetching data for ${date}`)
   const url = `https://kalshi-public-docs.s3.amazonaws.com/reporting/market_data_${date}.json`;
-  const response = await fetch(url).then(res => res.json());
+  let response;
+  try {
+    response = await fetch(url).then(res => res.json());
+  } catch (error) {
+    console.error('Fetch error:', error);
+    return;
+  }
 
   const mappedMarkets = response.map(market => ({
     ticker: market.ticker_name,
