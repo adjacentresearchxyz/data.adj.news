@@ -134,25 +134,3 @@ async function processData() {
 }
 
 processData();
-
-// // Generate Embedding from Headline 
-// const generateEmbedding = await pipeline('feature-extraction', 'Supabase/gte-small');
-// // Assuming `data.description` contains the text to generate embedding from
-// const output = await generateEmbedding("approve", {
-//   pooling: 'mean',
-//   normalize: true,
-// });
-
-// // Extract the embedding output
-// const embedding = Array.from(output.data);
-
-// console.log(embedding)
-
-// const { data: documents, error } = await supabase.rpc('match_documents', {
-//   query_embedding: embedding, // pass the query embedding
-//   match_threshold: 0.85, // choose an appropriate threshold for your data
-//   match_count: 3, // choose the number of matches
-// })
-// if (error) console.error(error)
-
-// documents.map(document => console.log(document.ticker));

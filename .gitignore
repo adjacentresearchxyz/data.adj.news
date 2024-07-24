@@ -5,3 +5,4 @@ src/.observablehq/cache/
 node_modules/
 yarn-error.log
 .nix-node
+.venv
