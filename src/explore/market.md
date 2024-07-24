@@ -1,3 +1,7 @@
+---
+title: My favorite page
+---
+
 ```js
   // Get the market query parameter from the URL
   const urlParams = new URLSearchParams(window.location.search);
@@ -127,6 +131,12 @@ function trend(v) {
 }
 ```
 
+```js
+const url = "https://manifold.markets/NathanNguyen/will-any-top-10";
+const domain = new URL(url).hostname.split('.')[0]; // Extracts 'manifold' from the URL
+const capitalizedDomain = domain.charAt(0).toUpperCase() + domain.slice(1); // Capitalizes the first letter
+```
+
 <style>
   .card {
     width: 20%;
@@ -167,11 +177,26 @@ function trend(v) {
 </style>
 
 <div>
+  <title>${market}</title>
+
   ${
     fullMarket ? htl.html`<h1><a href="${fullMarket.Link}" class="dotted" target="_blank">${market}</a></h1>` : ""
   }
 
-  <div class="card">${fullMarket.Probability}% Probability</div>
+  ${
+    htl.html`
+      <div>
+        <a href="${fullMarket.Link}" target="_blank" rel="noopener noreferrer">
+          Trade on ${capitalizedDomain}
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-arrow-out-up-right"><path d="M21 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6"/><path d="m21 3-9 9"/><path d="M15 3h6v6"/></svg>
+        </a>
+      </div>
+    `
+  }
+
+  <div class="flex">
+    <div class="card">${fullMarket.Probability}% Probability</div>
+  </div>
 
   <h2>News</h2>
   Powered by <a href="https://exa.ai" target="_blank" class="dotted">Exa</a>
