@@ -15,11 +15,10 @@ title: My favorite page
   market_filtered = market_filtered.trim();
 
   // Fetch news data
-  const response = await fetch(`https://api.data.adj.news/api/news/${market_filtered}`);
-  // const response = await fetch(`https://localhost:8787/api/news/${market}`)
-  const data = await response.json();
-  const news = data.results;
-  console.log(news)
+  // const response = await fetch(`https://api.data.adj.news/api/news/${market_filtered}`);
+  // // const response = await fetch(`https://localhost:8787/api/news/${market}`)
+  // const data = await response.json();
+  // const news = data.results;
 ```
 
 ```js
@@ -171,15 +170,16 @@ function trend(v) {
 </style>
 
 <div>
-  <title>${market}</title>
-
   ${
-    fullMarket ? htl.html`<h1><a href="${fullMarket.Link}" class="dotted" target="_blank">${market}</a></h1>` : ""
+    fullMarket ? htl.html`
+      <h1><a href="${fullMarket.Link}" class="dotted" target="_blank">${market}</a></h1>
+      <div class="card">${fullMarket.Probability}% Probability</div>
+      <div style="margin-top: 1rem;">
+        <a href="${fullMarket.Link}" target="_blank" class="trade-now-button">Trade Now</a>
+      </div>
+    ` : ""
   }
-
-  <div class="card">${fullMarket.Probability}% Probability</div>
-
-  <h2>News</h2>
+  <!-- <h2>News</h2>
   Powered by <a href="https://exa.ai" target="_blank" class="dotted">Exa</a>
   <br />
   <div style="margin-left: -1em;">
@@ -190,7 +190,7 @@ function trend(v) {
         </li>
       `)}
     </ul>
-  </div>
+  </div> -->
 
 <!-- <div class="grid grid-cols-2-3" style="margin-top: 2rem;"> -->
   <!-- <div class="card">${fullMarket.Probability}</div> -->
