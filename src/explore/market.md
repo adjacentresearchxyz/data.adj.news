@@ -1,121 +1,105 @@
----
-title: My favorite page
----
+# Will Donald Trump win the 2024 US Presidential Election?
 
 ```js
-  // Get the market query parameter from the URL
-  const urlParams = new URLSearchParams(window.location.search);
-  const market = urlParams.get('question');
+const market = FileAttachment("../data/api/markets.csv").csv({typed: true});
+const tidy = market.then((rows) => rows.flatMap(({date, probability, daily_volatility}) => [{date: date, probability: probability * 100, type: "Probability"}]));
+const daily = market.then((rows) => {
+  const dailyData = rows.reduce((acc, {date, probability, daily_volatility}) => {
+    const formattedDate = new Date(date).setHours(0, 0, 0, 0);
+    const formattedDateString = new Date(formattedDate).toLocaleDateString('en-US');
+    if (!acc[formattedDateString]) {
+      acc[formattedDateString] = {date: formattedDateString, probability: 0, volatility: 0, count: 0};
+    }
+    acc[formattedDateString].probability += probability;
+    acc[formattedDateString].volatility += daily_volatility;
+    acc[formattedDateString].count++;
+    return acc;
+  }, {});
+  return Object.values(dailyData).map(({date, probability, volatility, count}) => ({
+    date: date,
+    probability: Math.round((probability / count * 100) * 100) / 100,
+    type: "probability"
+  }));
+});
 ```
 
 ```js
-  // clean up the market query parameter
-  const allowedChars = /[^a-zA-Z0-9 ,.?!]/g;
-  let market_filtered = market.replace(allowedChars, '');
-  market_filtered = market_filtered.trim();
-
-  // Fetch news data
-  // const response = await fetch(`https://api.data.adj.news/api/news/${market_filtered}`);
-  // // const response = await fetch(`https://localhost:8787/api/news/${market}`)
-  // const data = await response.json();
-  // const news = data.results;
+const color = Plot.scale({color: {domain: ["Probability", "Volatility"]}});
+const colorLegend = (y) => html`<span style="border-bottom: solid 2px ${color.apply(`${y}Y FRM`)};">${y}-year fixed-probability</span>`;
 ```
 
 ```js
-//
-// Load data snapshots
-//
-
-// Kalshi Markets
-const kalshiMarkets = FileAttachment("../data/kalshi/kalshi-markets.json").json();
-
-// Metaculus Markets 
-const metaculusMarkets = FileAttachment("../data/metaculus/metaculus-markets.json").json();
-
-// Manifold Markets 
-const manifoldMarketsZip = FileAttachment("../data/manifold/manifold-markets.zip").zip();
-const manifoldMarkets = FileAttachment("../data/manifold/manifold-markets/markets.json").json();
-
-// Polymarket Markets 
-const polymarketMarkets = FileAttachment("../data/polymarket/polymarket-markets.json").json();
-```
-
-```js
-// Iterate over markets for each platform and try and match the market to the news query to display odds
-const allMarkets = [...metaculusMarkets, ...manifoldMarkets, ...polymarketMarkets, ...kalshiMarkets];
-const fullMarket = allMarkets.find(platformMarket => platformMarket.Question.Title.toLowerCase().includes(market.toLowerCase()));
-```
-
-
-```js
-const color = Plot.scale({color: {domain: ["30Y FRM", "15Y FRM"]}});
-const colorLegend = (y) => html`<span style="border-bottom: solid 2px ${color.apply(`${y}Y FRM`)};">${y}-year fixed-rate</span>`;
-```
-
-<!-- ```js
-const defaultStartEnd = [pmms.at(-53).date, pmms.at(-1).date];
+const defaultStartEnd = tidy.length > 53 ? [new Date(tidy.at(-53).date), new Date(tidy.at(-1).date)] : [new Date(tidy.at(-tidy.length).date), new Date(tidy.at(-1).date)];
 const startEnd = Mutable(defaultStartEnd);
 const setStartEnd = (se) => startEnd.value = (se ?? defaultStartEnd);
 const getStartEnd = () => startEnd.value;
-``` -->
+```
 
 ```js
-function frmCard(market) {
-  // const key = `pmms${y}`;
-  // const diff1 = pmms.at(-1)[key] - pmms.at(-2)[key];
-  // const diffY = pmms.at(-1)[key] - pmms.at(-53)[key];
-  // const range = d3.extent(pmms.slice(-52), (d) => d[key]);
-  // const stroke = color.apply(`${y}Y FRM`);
-  // <h2 style="color: ${market.Question.Title}</b></h2>
+function frmCard(y, market) {
+  const key = `probability`;
+
+  const today = market.at(-1).date;
+  const yesterday = market.find(d => new Date(d.date) < new Date(today));
+  const yearAgo = market.find(d => new Date(d.date) < new Date(today) && (new Date(today) - new Date(d.date)) / (1000 * 60 * 60 * 24) >= 365);
+  const oneWeekAgo = market.find(d => new Date(d.date) < new Date(today) && (new Date(today) - new Date(d.date)) / (1000 * 60 * 60 * 24) >= 7);
+  const oneMonthAgo = market.find(d => new Date(d.date) < new Date(today) && (new Date(today) - new Date(d.date)) / (1000 * 60 * 60 * 24) >= 30);
+
+  const oneWeekChange = daily.at(-1).probability - (daily.at(-8) ? daily.at(-8).probability : 0);
+  const tenDayAvg = d3.mean(daily.slice(-10), (d) => d.probability);
+  const oneMonthAvg = d3.mean(daily.slice(-30), (d) => d.probability);
+  
+  const diff1 = market.at(-1)[key] - (yesterday ? yesterday[key] : 0);
+  const diffY = market.at(-1)[key] - (yearAgo ? yearAgo[key] : 0);
+
+  const stroke = color.apply(`Probability`);
 
   return html.fragment`
-    <h1>${formatPercent(market.Probability)}</h1>
+    <h2>${y}</h2>
+    <h1>${formatPercent(market.at(-1)[key])}</h1>
+    <table>
+      <tr>
+        <td>1-day change</td>
+        <td align="right">${formatPercent(diff1, {signDisplay: "always"})}</td>
+        <td>${trend(diff1)}</td>
+      </tr>
+      <tr>
+        <td>1-week change</td>
+        <td align="right">${formatPercent(oneWeekChange, {signDisplay: "always"})}</td>
+        <td>${trend(oneWeekChange)}</td>
+      </tr>
+      <tr>
+        <td>10-day average</td>
+        <td align="right">${formatPercent(tenDayAvg)}</td>
+      </tr>
+      <tr>
+        <td>1-month average</td>
+        <td align="right">${formatPercent(oneMonthAvg)}</td>
+      </tr>
+    </table>
+    ${resize((width) =>
+      Plot.plot({
+        width,
+        height: 40,
+        axis: null,
+        x: {inset: 40},
+        marks: [
+          Plot.tickX(daily.slice(-52), {
+            x: key,
+            stroke,
+            insetTop: 10,
+            insetBottom: 10,
+            title: (d) => `${new Date(d.date)?.toLocaleDateString("en-us")}: ${d[key]}%`,
+            tip: {anchor: "bottom"}
+          }),
+          Plot.tickX(daily.slice(-1), {x: key, strokeWidth: 1}),
+          Plot.text([`${formatPercent(Math.min(daily[0][key], daily[daily.length - 1][key]), {signDisplay: "never"})}`], {frameAnchor: "left"}),
+          Plot.text([`${formatPercent(Math.max(daily[0][key], daily[daily.length - 1][key]), {signDisplay: "never"})}`], {frameAnchor: "right"})
+        ]
+      })
+    )}
   `;
 }
-
-// In the above code when historical data is there 
-//     // <table>
-//     //   <tr>
-//     //     <td>1-week change</td>
-//     //     <td align="right">${formatPercent(diff1, {signDisplay: "always"})}</td>
-//     //     <td>${trend(diff1)}</td>
-//     //   </tr>
-//     //   <tr>
-//     //     <td>1-year change</td>
-//     //     <td align="right">${formatPercent(diffY, {signDisplay: "always"})}</td>
-//     //     <td>${trend(diffY)}</td>
-//     //   </tr>
-//     //   <tr>
-//     //     <td>4-week average</td>
-//     //     <td align="right">${formatPercent(d3.mean(pmms.slice(-4), (d) => d[key]))}</td>
-//     //   </tr>
-//     //   <tr>
-//     //     <td>52-week average</td>
-//     //     <td align="right">${formatPercent(d3.mean(pmms.slice(-52), (d) => d[key]))}</td>
-//     //   </tr>
-//     // </table>
-//     ${resize((width) =>
-//       Plot.plot({
-//         width,
-//         height: 40,
-//         axis: null,
-//         x: {inset: 40},
-//         marks: [
-//           Plot.tickX(pmms.slice(-52), {
-//             x: key,
-//             stroke,
-//             insetTop: 10,
-//             insetBottom: 10,
-//             title: (d) => `${d.date?.toLocaleDateString("en-us")}: ${d[key]}%`,
-//             tip: {anchor: "bottom"}
-//           }),
-//           Plot.tickX(pmms.slice(-1), {x: key, strokeWidth: 2}),
-//           Plot.text([`${range[0]}%`], {frameAnchor: "left"}),
-//           Plot.text([`${range[1]}%`], {frameAnchor: "right"})
-//         ]
-//       })
-//     )}
-//     // <span class="small muted">52-week range</span>
 
 function formatPercent(value, format) {
   return value == null
@@ -130,98 +114,126 @@ function trend(v) {
 }
 ```
 
-<style>
-  .card {
-    width: 20%;
-  }
-  .news-item {
-    /* width: 50%; */
-    /* border: 1px dotted #d3d3d3; */
-    /* border-radius: 7px; */
-    padding: 0;
-    margin: 0;
-    margin-bottom: 5px;
-    background-color: rgba(0, 0, 0, 0.5);
-    font-family: monospace, sans-serif;
-    color: #fff;
-  }
-  .news-item a {
-    color: #1b95e0;
-    text-decoration: none;
-  }
-  .news-item a:hover {
-    text-decoration: underline;
-  }
-  @container (min-width: 560px) {
-    .grid-cols-2-3 {
-      grid-template-columns: 1fr 1fr;
-    }
-    .grid-cols-2-3 .grid-colspan-2 {
-      grid-column: span 2;
-    }
-  }
+```js
+function newsCard(market) {
+  return html.fragment`
+    <h2>Related News</h2>
+    <table>
+      <tr>
+        <td>
+          <a href="#" style="text-decoration: underline; text-decoration-thickness: 0.5px; text-underline-offset: 1px;"><h3>Harris Leads Trump in Three Key States, Times/Siena Polls Find - NYT</h3></a>
+        </td>
+        <td align="right">
+          <p>08.10.24</p>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <a href="#" style="text-decoration: underline; text-decoration-thickness: 0.5px; text-underline-offset: 1px;"><h3>Donald Trump v Kamala Harris: who's ahead in the polls? - Economist</h3></a>
+        </td>
+        <td align="right">
+          <p>08.10.24</p>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <a href="#" style="text-decoration: underline; text-decoration-thickness: 0.5px; text-underline-offset: 1px;"><h3>Trump and Harris agree to debate on Sept. 10 - AP</h3></a>
+        </td>
+        <td align="right">
+          <p>08.08.24</p>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <a href="#" style="text-decoration: underline; text-decoration-thickness: 0.5px; text-underline-offset: 1px;"><h3>Arizona Republican who fought Trump’s false election claims loses primary - PBS</h3></a>
+        </td>
+        <td align="right">
+          <p>08.07.24</p>
+        </td>
+      </tr>
+    </table>
+    <a href="#" style="text-decoration: underline; text-decoration-thickness: 0.5px; text-underline-offset: 1px;">Read More</a>
+  `;
+}
+```
 
-  @container (min-width: 840px) {
-    .grid-cols-2-3 {
-      grid-template-columns: 1fr 2fr;
-      grid-auto-flow: column;
-    }
+```js
+const filteredData = tidy.filter((d) => startEnd[0] <= new Date(d.date) && new Date(d.date) < startEnd[1])
+      .map(d => ({...d, date: new Date(d.date)}));
+const dates = filteredData.map(d => new Date(d.date));
+const minDate = d3.min(dates);
+const maxDate = d3.max(dates);
+```
+
+<code>ADJ-POLYMARKET-WILL-DONALD-TRUMP-WIN-THE-2024-US-PRESIDENTIAL-ELECTION</code>
+
+This market will resolve to “Yes” if Donald J. Trump wins the 2024 US Presidential Election. Otherwise, this market will resolve to “No.”
+
+The resolution source for this market is the Associated Press, Fox News, and NBC. This market will resolve once all three sources call the race for the same candidate. If all three sources haven’t called the race for the same candidate by the inauguration date (January 20, 2025) this market will resolve based on who is inauguprobabilityd.
+
+<style type="text/css">
+
+@container (min-width: 560px) {
+  .grid-cols-2-3 {
+    grid-template-columns: 1fr 1fr;
   }
+  .grid-cols-2-3 .grid-colspan-2 {
+    grid-column: span 2;
+  }
+}
+
+@container (min-width: 840px) {
+  .grid-cols-2-3 {
+    grid-template-columns: 1fr 2fr;
+    grid-auto-flow: column;
+  }
+}
+
 </style>
 
-<div>
-  ${
-    fullMarket ? htl.html`
-      <h1><a href="${fullMarket.Link}" class="dotted" target="_blank">${market}</a></h1>
-      <div class="card">${fullMarket.Probability}% Probability</div>
-      <div style="margin-top: 1rem;">
-        <a href="${fullMarket.Link}" target="_blank" class="trade-now-button">Trade Now</a>
-      </div>
-    ` : ""
-  }
-  <!-- <h2>News</h2>
-  Powered by <a href="https://exa.ai" target="_blank" class="dotted">Exa</a>
-  <br />
-  <div style="margin-left: -1em;">
-    <ul>
-      ${news.map(d => htl.html`
-        <li class="news-item">
-          <a href="${d.url}" target="_blank">${d.title}</a>
-        </li>
-      `)}
-    </ul>
-  </div> -->
-
-<!-- <div class="grid grid-cols-2-3" style="margin-top: 2rem;"> -->
-  <!-- <div class="card">${fullMarket.Probability}</div> -->
-  <!-- <div class="card grid-colspan-2 grid-rowspan-2" style="display: flex; flex-direction: column;">
-    <h2>Rates ${startEnd === defaultStartEnd ? "over the past year" : startEnd.map((d) => d.toLocaleDateString("en-US")).join("–")}</h2><br>
+<div class="grid grid-cols-2-3" style="margin-top: 2rem;">
+  <div class="card">${frmCard('Probability', market)}</div>
+  <div class="card">${newsCard(market)}</div>
+  <div class="card grid-colspan-2 grid-rowspan-2" style="display: flex; flex-direction: column;">
+    <h2>Focused Probability</h2><br>
     <span style="flex-grow: 1;">${resize((width, height) =>
       Plot.plot({
         width,
         height,
-        y: {grid: true, label: "rate (%)"},
+        y: {grid: true, label: "Probability (%)"},
+        x: {
+          type: "time",
+          domain: [minDate, maxDate],
+          ticks: 10,
+          label: "Date",
+        },
         color,
         marks: [
-          Plot.lineY(tidy.filter((d) => startEnd[0] <= d.date && d.date < startEnd[1]), {x: "date", y: "rate", stroke: "type", curve: "step", tip: true, markerEnd: true})
+          Plot.lineY(filteredData, {
+            x: "date", 
+            y: "probability", 
+            stroke: "type", 
+            curve: "step", 
+            tip: true
+          }),
         ]
       })
     )}</span>
-  </div> -->
-<!-- </div> -->
+  </div>
+</div>
 
-<!-- <div class="grid">
+<div class="grid">
   <div class="card">
-    <h2>Rates over all time (${d3.extent(pmms, (d) => d.date.getUTCFullYear()).join("–")})</h2>
+    <h2>All Time Probability</h2>
     <h3>Click or drag to zoom</h3><br>
     ${resize((width) =>
       Plot.plot({
         width,
-        y: {grid: true, label: "rate (%)"},
+        y: {grid: true, label: "Probability (%)"},
         color,
         marks: [
           Plot.ruleY([0]),
-          Plot.lineY(tidy, {x: "date", y: "rate", stroke: "type", tip: true}),
+          Plot.lineY(tidy.map(d => ({...d, date: new Date(d.date)})), {x: "date", y: "probability", stroke: "type", tip: true}),
           (index, scales, channels, dimensions, context) => {
             const x1 = dimensions.marginLeft;
             const y1 = 0;
@@ -253,5 +265,4 @@ function trend(v) {
       })
     )}
   </div>
-</div> -->
 </div>
