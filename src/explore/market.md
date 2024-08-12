@@ -1,9 +1,22 @@
-# Will Donald Trump win the 2024 US Presidential Election?
-
 ```js
-const market = FileAttachment("../data/api/markets.csv").csv({typed: true});
-const tidy = market.then((rows) => rows.flatMap(({date, probability, daily_volatility}) => [{date: date, probability: probability * 100, type: "Probability"}]));
-const daily = market.then((rows) => {
+const urlParams = new URLSearchParams(window.location.search);
+const ticker = urlParams.get('ticker');
+
+// csv for market and trade information
+const markets = FileAttachment("../data/api/markets.csv").csv({typed: true});
+const trades = FileAttachment("../data/api/trades.csv").csv({typed: true});
+
+const filteredTrades = trades
+  .then(rows => {
+    const filteredRows = rows.filter(row => row['adj_ticker'] === ticker);
+    return filteredRows;
+});
+
+// all data but cleaned
+const tidy = filteredTrades.then((rows) => rows.flatMap(({date, probability, daily_volatility}) => [{date: date, probability: probability * 100, type: "Probability"}]));
+
+// daily data for download and stats
+const daily = filteredTrades.then((rows) => {
   const dailyData = rows.reduce((acc, {date, probability, daily_volatility}) => {
     const formattedDate = new Date(date).setHours(0, 0, 0, 0);
     const formattedDateString = new Date(formattedDate).toLocaleDateString('en-US');
@@ -18,9 +31,23 @@ const daily = market.then((rows) => {
   return Object.values(dailyData).map(({date, probability, volatility, count}) => ({
     date: date,
     probability: Math.round((probability / count * 100) * 100) / 100,
+    volatility: volatility,
     type: "probability"
   }));
 });
+
+const filteredMarket = markets
+  .then(rows => {
+    const filteredRows = rows.filter(row => row['adj_ticker'] === ticker);
+    if (!filteredRows || filteredRows.length < 1) {
+      window.location.href = '/';
+    }
+    return filteredRows;
+  })
+  .catch(error => {
+    console.error('Error filtering market data:', error);
+    window.location.href = '/';
+  });
 ```
 
 ```js
@@ -29,7 +56,10 @@ const colorLegend = (y) => html`<span style="border-bottom: solid 2px ${color.ap
 ```
 
 ```js
-const defaultStartEnd = tidy.length > 53 ? [new Date(tidy.at(-53).date), new Date(tidy.at(-1).date)] : [new Date(tidy.at(-tidy.length).date), new Date(tidy.at(-1).date)];
+const defaultStartEnd = [
+  new Date(tidy[Math.floor(tidy.length * 0.9)].date), 
+  new Date(tidy[tidy.length - 1].date)
+];
 const startEnd = Mutable(defaultStartEnd);
 const setStartEnd = (se) => startEnd.value = (se ?? defaultStartEnd);
 const getStartEnd = () => startEnd.value;
@@ -39,24 +69,26 @@ const getStartEnd = () => startEnd.value;
 function frmCard(y, market) {
   const key = `probability`;
 
-  const today = market.at(-1).date;
-  const yesterday = market.find(d => new Date(d.date) < new Date(today));
-  const yearAgo = market.find(d => new Date(d.date) < new Date(today) && (new Date(today) - new Date(d.date)) / (1000 * 60 * 60 * 24) >= 365);
-  const oneWeekAgo = market.find(d => new Date(d.date) < new Date(today) && (new Date(today) - new Date(d.date)) / (1000 * 60 * 60 * 24) >= 7);
-  const oneMonthAgo = market.find(d => new Date(d.date) < new Date(today) && (new Date(today) - new Date(d.date)) / (1000 * 60 * 60 * 24) >= 30);
+  const today = filteredTrades.at(-1).date;
+  const yesterday = filteredTrades.find(d => new Date(d.date) < new Date(today));
+  const yearAgo = filteredTrades.find(d => new Date(d.date) < new Date(today) && (new Date(today) - new Date(d.date)) / (1000 * 60 * 60 * 24) >= 365);
+  const oneWeekAgo = filteredTrades.find(d => new Date(d.date) < new Date(today) && (new Date(today) - new Date(d.date)) / (1000 * 60 * 60 * 24) >= 7);
+  const oneMonthAgo = filteredTrades.find(d => new Date(d.date) < new Date(today) && (new Date(today) - new Date(d.date)) / (1000 * 60 * 60 * 24) >= 30);
 
   const oneWeekChange = daily.at(-1).probability - (daily.at(-8) ? daily.at(-8).probability : 0);
   const tenDayAvg = d3.mean(daily.slice(-10), (d) => d.probability);
   const oneMonthAvg = d3.mean(daily.slice(-30), (d) => d.probability);
   
-  const diff1 = market.at(-1)[key] - (yesterday ? yesterday[key] : 0);
-  const diffY = market.at(-1)[key] - (yearAgo ? yearAgo[key] : 0);
+  const diff1 = filteredTrades.at(-1)[key] - (yesterday ? yesterday[key] : 0);
+  const diffY = filteredTrades.at(-1)[key] - (yearAgo ? yearAgo[key] : 0);
+
+  const avgVolatility = d3.mean(daily, (d) => d.volatility);
 
   const stroke = color.apply(`Probability`);
 
   return html.fragment`
     <h2>${y}</h2>
-    <h1>${formatPercent(market.at(-1)[key])}</h1>
+    <h1>${formatPercent(filteredTrades.at(-1)[key] * 100)}</h1>
     <table>
       <tr>
         <td>1-day change</td>
@@ -75,6 +107,10 @@ function frmCard(y, market) {
       <tr>
         <td>1-month average</td>
         <td align="right">${formatPercent(oneMonthAvg)}</td>
+      </tr>
+      <tr>
+        <td>Average Volatility</td>
+        <td align="right">${formatPercent(avgVolatility)}</td>
       </tr>
     </table>
     ${resize((width) =>
@@ -165,13 +201,13 @@ const minDate = d3.min(dates);
 const maxDate = d3.max(dates);
 ```
 
-<code>ADJ-POLYMARKET-WILL-DONALD-TRUMP-WIN-THE-2024-US-PRESIDENTIAL-ELECTION</code>
-
-This market will resolve to “Yes” if Donald J. Trump wins the 2024 US Presidential Election. Otherwise, this market will resolve to “No.”
-
-The resolution source for this market is the Associated Press, Fox News, and NBC. This market will resolve once all three sources call the race for the same candidate. If all three sources haven’t called the race for the same candidate by the inauguration date (January 20, 2025) this market will resolve based on who is inauguprobabilityd.
-
 <style type="text/css">
+
+/* @keyframes blink {
+  0% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 1; }
+} */
 
 @container (min-width: 560px) {
   .grid-cols-2-3 {
@@ -191,9 +227,43 @@ The resolution source for this market is the Associated Press, Fox News, and NBC
 
 </style>
 
+<div>
+  <h1>${filteredMarket[0]['question']}</h1>
+  <code>${filteredMarket[0].adj_ticker}</code>
+  <div style="display: flex; gap: 10px; margin-top: 10px;">
+      ${filteredMarket[0].status === 'active' ? htl.html`
+       <div style="display: flex; align-items: center;">
+        <span style="width: 10px; height: 10px; background-color: green; border-radius: 50%; margin-right: 5px; animation: blink 1s infinite;"></span>
+        <span>Active</span>
+      </div>` : `
+        <div style="display: flex; align-items: center;">
+        <span style="width: 10px; height: 10px; background-color: blue; border-radius: 50%; margin-right: 5px;"></span>
+        <span>Finalized</span>
+      </div>
+      `}
+       <div style="display: flex; align-items: center;">
+        <span>Category: ${filteredMarket[0]['category'].split('"')[1]}</span>
+      </div>
+  </div>
+  </br />
+  <details open>
+    <summary>Read Full Rules</summary>
+    <p>${filteredMarket[0]['description']}</p>
+  </details>
+  <div style="display: flex; justify-content: space-between; margin-top: 2rem; width: 50%;">
+    <button style="flex: 1; margin: 0 10px 0 0; padding: 5px 10px; border: 1px solid #ddd; border-radius: 5px; background-color: #000; font-size: 10px; font-weight: bold; cursor: pointer; font-family: monospace;">
+      <!-- TODO add in trade link -->
+      <a href=# style="text-decoration: none">Trade</a> 
+    </button>
+    <button style="flex: 1; margin: 0 10px; padding: 5px 10px; border: 1px solid #ddd; border-radius: 5px; background-color: #000; font-size: 10px; font-weight: bold; cursor: pointer; font-family: monospace;">Download</button>
+    <button style="flex: 1; margin: 0 10px; padding: 5px 10px; border: 1px solid #ddd; border-radius: 5px; background-color: #000; font-size: 10px; font-weight: bold; cursor: pointer; font-family: monospace;">Embed</button>
+    <button style="flex: 1; margin: 0 10px; padding: 5px 10px; border: 1px solid #ddd; border-radius: 5px; background-color: #000; font-size: 10px; font-weight: bold; cursor: pointer; font-family: monospace;">Explore</button>
+  </div>
+<div>
+
 <div class="grid grid-cols-2-3" style="margin-top: 2rem;">
-  <div class="card">${frmCard('Probability', market)}</div>
-  <div class="card">${newsCard(market)}</div>
+  <div class="card">${frmCard('Probability', filteredTrades)}</div>
+  <div class="card">${newsCard(filteredTrades)}</div>
   <div class="card grid-colspan-2 grid-rowspan-2" style="display: flex; flex-direction: column;">
     <h2>Focused Probability</h2><br>
     <span style="flex-grow: 1;">${resize((width, height) =>
@@ -211,7 +281,7 @@ The resolution source for this market is the Associated Press, Fox News, and NBC
         marks: [
           Plot.lineY(filteredData, {
             x: "date", 
-            y: "probability", 
+            y: "probability",
             stroke: "type", 
             curve: "step", 
             tip: true
