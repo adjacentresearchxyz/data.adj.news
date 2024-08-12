@@ -6,14 +6,38 @@ process.stdout.write(
     await run(
       (sql) =>
         sql`SELECT 
-            *,
-            to_char(to_timestamp(timestamp), 'YYYY-MM-DD HH24:MI:SS') AS date
+            ticker, 
+            adj_ticker, 
+            reported_date, 
+            end_date, 
+            market_slug, 
+            open_interest, 
+            volume, 
+            question, 
+            description, 
+            forecasts, 
+            link, 
+            platform, 
+            status, 
+            market_type, 
+            liquidity, 
+            rules, 
+            probability,
+            forecast, 
+            result, 
+            category,
+            platform_id
         FROM 
-            market_data_with_volatility
+            markets_data
         WHERE 
-            adj_ticker = 'ADJ-POLYMARKET-WILL-DONALD-TRUMP-WIN-THE-2024-US-PRESIDENTIAL-ELECTION'
-        ORDER BY 
-          timestamp`
-    )
+            probability > 0 
+            AND probability < 100 
+            AND end_date >= CURRENT_DATE
+            AND EXISTS (
+                SELECT 1 
+                FROM market_data_with_volatility 
+                WHERE market_data_with_volatility.adj_ticker = markets_data.adj_ticker
+        )`
+     )
   )
 );

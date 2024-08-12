@@ -3,23 +3,7 @@
 // Load data snapshots
 //
 
-// Kalshi Markets 
-const kalshiMarkets = FileAttachment("./data/kalshi/kalshi-markets.json").json();
-
-// Metaculus Markets 
-const metaculusMarkets = FileAttachment("./data/metaculus/metaculus-markets.json").json();
-
-// Manifold Markets 
-const manifoldMarketsZip = FileAttachment("./data/manifold/manifold-markets.zip").zip();
-const manifoldMarkets = FileAttachment("./data/manifold/manifold-markets/markets.json").json();
-
-// Polymarket Markets 
-const polymarketMarkets = FileAttachment("./data/polymarket/polymarket-markets.json").json();
-```
-
-```js
-// Aggregate all markets
-const allMarkets = [...kalshiMarkets, ...polymarketMarkets, ...metaculusMarkets, ...manifoldMarkets];
+const allMarkets = FileAttachment("./data/api/markets.csv").csv({typed: true});
 ```
 
 ```js
@@ -160,7 +144,7 @@ function shuffle(array) {
 ```
 
 ```js
-let filteredMarkets = allMarkets.filter(d => d.Status ? d.Status === "active" | d.Status === null : true);
+let filteredMarkets = allMarkets.filter(d => d.status ? d.status === "active" | d.status === null : true);
 const searchMarkets = view(Inputs.search(filteredMarkets, {
     placeholder: `Search ${formatNumber(filteredMarkets.length)} prediction markets`,
     width: "90%",
@@ -173,14 +157,14 @@ const searchMarkets = view(Inputs.search(filteredMarkets, {
     <div class="news-card">
         <div class="news-content">
             <h2 class="news-title">
-                <a href="https://data.adj.news/explore/market?question=${market.Question.Title}">
-                    ${market.Question.Title.length > 34 ? market.Question.Title.substring(0, 34) + "..." : market.Question.Title}
+                <a href="/explore/market?ticker=${market.adj_ticker}">
+                    ${market.question.length > 34 ? market.question.substring(0, 34) + "..." : market.question}
                 </a>
             </h2>
-            <p class="news-description">${Number(market.Probability).toFixed(2)}% Probability</p>
+            <p class="news-description">${Number(market.probability).toFixed(2)}% Probability</p>
             <div class="news-metadata">
-                <a class="news-author" href="${market.Question.URL}" target="_blank" rel="noopener noreferrer">${market.Platform}</a>
-                ${market.Volume && market.Forecasts ? htl.html`<span class="news-date">${market.Volume.toFixed(2)} volume / ${market.Forecasts} Forecasters</span>` : ''}
+                <a class="news-author" href="${market.link}" target="_blank" rel="noopener noreferrer">${market.platform}</a>
+                ${market.volume && market.forecasts ? htl.html`<span class="news-date">${market.volume.toFixed(2)} volume / ${market.forecasts} Forecasters</span>` : ''}
             </div>
         </div>
     </div>
