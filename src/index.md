@@ -76,40 +76,40 @@ const allMarkets = FileAttachment("./data/api/markets.csv").csv({typed: true});
     opacity: 0.2;
 }
 
-    .news-content {
-        margin: 1em;
-    }
-    .news-category {
-        font-size: 0.8em;
-        color: #0066cc;
-        text-transform: uppercase;
-        margin-bottom: 10px;
-    }
-    .news-title {
-        font-size: 1.4em;
-        margin: 0 0 10px 0;
-        color: #333;
-        text-align: left;
-    }
-    .news-title a {
-        color: #333;
-    }
-    .news-description {
-        font-size: 0.9em;
-        color: #666;
-        margin-bottom: 15px;
-        line-height: 1.4;
-        text-align: left;
-    }
-    .news-metadata {
-        display: flex;
-        justify-content: space-between;
-        font-size: 0.8em;
-        color: #888;
-    }
-    .news-metadata a {
-        color: #333;
-    }
+.news-content {
+    margin: 1em;
+}
+.news-category {
+    font-size: 0.8em;
+    color: #ffffff;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}
+.news-title {
+    font-size: 1.4em;
+    margin: 0 0 10px 0;
+    color: #ffffff;
+    text-align: left;
+}
+.news-title a {
+    color: #ffffff;
+}
+.news-description {
+    font-size: 0.9em;
+    color: #666;
+    margin-bottom: 15px;
+    line-height: 1.4;
+    text-align: left;
+}
+.news-metadata {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8em;
+    color: #000000;
+}
+.news-metadata a {
+    color: #ffffff;
+}
 </style>
 
 ```js
@@ -154,13 +154,14 @@ const searchMarkets = view(Inputs.search(filteredMarkets, {
 
 <div class="search-results" style="color: green">
   ${shuffle(searchMarkets).slice(0, 21).map(market => htl.html`
-    <div class="news-card">
+    <div class="card">
         <div class="news-content">
             <h2 class="news-title">
                 <a href="/explore/market?ticker=${market.adj_ticker}">
-                    ${market.question.length > 34 ? market.question.substring(0, 34) + "..." : market.question}
+                    ${market.question}
                 </a>
             </h2>
+            <p class="news-description">${market.category.replace(/[<>"]/g, '').split(',').map(cat => cat.trim()).filter(cat => cat !== 'All').join(', ')}</p>
             <p class="news-description">${Number(market.probability).toFixed(2)}% Probability</p>
             <div class="news-metadata">
                 <a class="news-author" href="${market.link}" target="_blank" rel="noopener noreferrer">${market.platform}</a>
