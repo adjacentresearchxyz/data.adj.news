@@ -8,9 +8,22 @@ const trades = FileAttachment("../data/api/trades.csv").csv({typed: true});
 
 const filteredTrades = trades
   .then(rows => {
+    // Filter rows based on adj_ticker
     const filteredRows = rows.filter(row => row['adj_ticker'] === ticker);
-    return filteredRows;
-});
+    
+    // Ensure all timestamp values are unique
+    const uniqueTimestamps = new Set();
+    const uniqueRows = filteredRows.filter(row => {
+      if (uniqueTimestamps.has(row['date'])) {
+        return false;
+      } else {
+        uniqueTimestamps.add(row['date']);
+        return true;
+      }
+    });
+
+    return uniqueRows;
+  });
 
 // all data but cleaned
 const tidy = filteredTrades.then((rows) => rows.flatMap(({date, probability, daily_volatility}) => [{date: date, probability: probability * 100, type: "Probability"}]));
@@ -48,6 +61,31 @@ const filteredMarket = markets
     console.error('Error filtering market data:', error);
     window.location.href = '/';
   });
+```
+
+```js
+let relatedNews = fetch('https://api.data.adj.news/api/news/market/' + filteredMarket[0].adj_ticker)
+  .then(response => response.json())
+  .then(data => {
+    return data;
+  })
+  .catch(err => console.error(err));
+
+let exaNews = fetch(`https://api.data.adj.news/api/news/${filteredMarket[0].title}`)
+  .then(response => response.json())
+  .then(data => {
+    const transformedNews = data.results.map(news => ({
+      id: news.id,
+      feed_id: null,
+      url: news.url,
+      title: news.title,
+      created_at: news.publishedDate,
+      updated_at: news.publishedDate, 
+      feed_title: 'Exa' 
+    })).filter(news => news.id && news.url && news.title && news.created_at && news.updated_at && news.feed_title);
+    return transformedNews.slice(0,4)
+  })
+  .catch(err => console.error('Error fetching related news:', err));
 ```
 
 ```js
@@ -151,42 +189,22 @@ function trend(v) {
 ```
 
 ```js
-function newsCard(market) {
-  return html.fragment`
+function newsCard(market, relatedNews) {
+  return htl.html`
     <h2>Related News</h2>
     <table>
-      <tr>
-        <td>
-          <a href="#" style="text-decoration: underline; text-decoration-thickness: 0.5px; text-underline-offset: 1px;"><h3>Harris Leads Trump in Three Key States, Times/Siena Polls Find - NYT</h3></a>
-        </td>
-        <td align="right">
-          <p>08.10.24</p>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <a href="#" style="text-decoration: underline; text-decoration-thickness: 0.5px; text-underline-offset: 1px;"><h3>Donald Trump v Kamala Harris: who's ahead in the polls? - Economist</h3></a>
-        </td>
-        <td align="right">
-          <p>08.10.24</p>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <a href="#" style="text-decoration: underline; text-decoration-thickness: 0.5px; text-underline-offset: 1px;"><h3>Trump and Harris agree to debate on Sept. 10 - AP</h3></a>
-        </td>
-        <td align="right">
-          <p>08.08.24</p>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <a href="#" style="text-decoration: underline; text-decoration-thickness: 0.5px; text-underline-offset: 1px;"><h3>Arizona Republican who fought Trump’s false election claims loses primary - PBS</h3></a>
-        </td>
-        <td align="right">
-          <p>08.07.24</p>
-        </td>
-      </tr>
+      ${relatedNews.map(news => `
+        <tr>
+          <td style="padding-top: 15px;">
+            <a href="${news.url}" style="text-decoration: underline; text-decoration-thickness: 0.5px; text-underline-offset: 1px;">
+              <h3>${news.title} - via ${news.source}</h3>
+            </a>
+          </td>
+          <td align="right">
+            <p>${new Date(news.updated_at).toLocaleDateString()}</p>
+          </td>
+        </tr>
+      `).join('')}
     </table>
     <a href="#" style="text-decoration: underline; text-decoration-thickness: 0.5px; text-underline-offset: 1px;">Read More</a>
   `;
@@ -199,6 +217,10 @@ const filteredData = tidy.filter((d) => startEnd[0] <= new Date(d.date) && new D
 const dates = filteredData.map(d => new Date(d.date));
 const minDate = d3.min(dates);
 const maxDate = d3.max(dates);
+```
+
+```js
+const link = filteredMarket[0].link
 ```
 
 <style type="text/css">
@@ -230,40 +252,65 @@ const maxDate = d3.max(dates);
 <div>
   <h1>${filteredMarket[0]['question']}</h1>
   <code>${filteredMarket[0].adj_ticker}</code>
-  <div style="display: flex; gap: 10px; margin-top: 10px;">
-      ${filteredMarket[0].status === 'active' ? htl.html`
-       <div style="display: flex; align-items: center;">
-        <span style="width: 10px; height: 10px; background-color: green; border-radius: 50%; margin-right: 5px; animation: blink 1s infinite;"></span>
-        <span>Active</span>
-      </div>` : `
-        <div style="display: flex; align-items: center;">
-        <span style="width: 10px; height: 10px; background-color: blue; border-radius: 50%; margin-right: 5px;"></span>
-        <span>Finalized</span>
-      </div>
-      `}
-       <div style="display: flex; align-items: center;">
-        <span>Category: ${filteredMarket[0]['category'].split('"')[1]}</span>
-      </div>
-  </div>
-  </br />
   <details open>
     <summary>Read Full Rules</summary>
     <p>${filteredMarket[0]['description']}</p>
   </details>
-  <div style="display: flex; justify-content: space-between; margin-top: 2rem; width: 50%;">
-    <button style="flex: 1; margin: 0 10px 0 0; padding: 5px 10px; border: 1px solid #ddd; border-radius: 5px; background-color: #000; font-size: 10px; font-weight: bold; cursor: pointer; font-family: monospace;">
-      <!-- TODO add in trade link -->
-      <a href=# style="text-decoration: none">Trade</a> 
-    </button>
-    <button style="flex: 1; margin: 0 10px; padding: 5px 10px; border: 1px solid #ddd; border-radius: 5px; background-color: #000; font-size: 10px; font-weight: bold; cursor: pointer; font-family: monospace;">Download</button>
-    <button style="flex: 1; margin: 0 10px; padding: 5px 10px; border: 1px solid #ddd; border-radius: 5px; background-color: #000; font-size: 10px; font-weight: bold; cursor: pointer; font-family: monospace;">Embed</button>
-    <button style="flex: 1; margin: 0 10px; padding: 5px 10px; border: 1px solid #ddd; border-radius: 5px; background-color: #000; font-size: 10px; font-weight: bold; cursor: pointer; font-family: monospace;">Explore</button>
-  </div>
 <div>
+
+<div style="display: flex; gap: 10px;">
+  <div>${Inputs.button([
+    ["Trade", () => {
+      window.open(link, '_blank');
+    }],
+    ["Download", () => {
+      const header = Object.keys(daily[0]).filter(key => key !== 'type').join(',');
+      const csv = daily.map(row => 
+        Object.entries(row)
+          .filter(([key]) => key !== 'type')
+          .map(([, value]) => value)
+          .join(',')
+      ).join('\n');
+      const csvWithHeader = `${header}\n${csv}`;
+      const blob = new Blob([csvWithHeader], {type: 'text/csv'});
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      const date = new Date();
+      const dateString = `${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()}`;
+      link.download = `${filteredMarket[0].adj_ticker}-trades-${dateString}.csv`;
+      link.click();
+    }]
+  ], {value: null})}</div>
+</div>
 
 <div class="grid grid-cols-2-3" style="margin-top: 2rem;">
   <div class="card">${frmCard('Probability', filteredTrades)}</div>
-  <div class="card">${newsCard(filteredTrades)}</div>
+  <div class="card">
+    ${htl.html`
+      <h2>Related News</h2>
+      <table>
+        ${relatedNews ? relatedNews.map(news => htl.html`
+          <tr>
+            <td style="padding-top: 15px;">
+              <a href="${news.url}" style="text-decoration: underline; text-decoration-thickness: 0.5px; text-underline-offset: 1px;">
+                <h3>${news.title} - via ${news.feed_title}</h3>
+              </a>
+            </td>
+          </tr>
+        `): ''}
+        ${!relatedNews || relatedNews.length < 2 ? exaNews.map(news => htl.html`
+          <td style="padding-top: 15px;">
+            <a href="${news.url}" style="text-decoration: underline; text-decoration-thickness: 0.5px; text-underline-offset: 1px;">
+              <h3>${news.title} - via ${news.feed_title}</h3>
+            </a>
+          </td>
+        `) : ''}
+      </table>
+      <div style="position: relative; height: 10%;">
+        <a href="#" style="position: absolute; bottom: 0; left: 0; text-decoration: underline; text-decoration-thickness: 0.5px; text-underline-offset: 1px;">Read More</a>
+      </div>
+    `}
+  </div>
   <div class="card grid-colspan-2 grid-rowspan-2" style="display: flex; flex-direction: column;">
     <h2>Focused Probability</h2><br>
     <span style="flex-grow: 1;">${resize((width, height) =>
@@ -283,7 +330,6 @@ const maxDate = d3.max(dates);
             x: "date", 
             y: "probability",
             stroke: "type", 
-            curve: "step", 
             tip: true
           }),
         ]

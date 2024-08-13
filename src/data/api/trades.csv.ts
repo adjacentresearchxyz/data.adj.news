@@ -9,7 +9,7 @@ process.stdout.write(
               adj_ticker,
               probability,
               daily_volatility,
-              DATE(to_timestamp(timestamp)) as date
+              to_timestamp(timestamp) as date
             from market_data_with_volatility
             order by timestamp;`
     )

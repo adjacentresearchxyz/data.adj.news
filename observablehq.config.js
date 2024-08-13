@@ -10,25 +10,10 @@ export default {
       name: "Overview",
       open: true,
       path: "/",
-    },
-    {
-      name: "markets",
-      path: "/markets",
-    },
-    {
-      name: "Reporting",
-      open: true,
-      pages: [
-        { name: "Kalshi Markets", path: "/platforms/kalshi/markets" },
-        { name: "Kalshi Trades", path: "/platforms/kalshi/trades" },
-      ]
     }
   ],
   footer: `<div>
       <div>
-        <a target="_blank" href="/platforms/"><span>Platforms</span></a> /
-        <a target="_blank" href="/reporting/"><span>Reporting</span></a> /
-        <a target="_blank" href="https://api.data.adj.news"><span>API</span></a> /
         <a target="_blank" href="https://adj.news"><span>News</span></a> /
         <a target="_blank" href="https://adjacentresearch.substack.com"><span>Press</span></a>
       </div>
@@ -260,9 +245,6 @@ a:visited {
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
       </label>
       <nav class="menu">
-        <a class="nav-item" href="https://data.adj.news/platforms/" style="text-decoration: none">Platforms</a>
-        <a class="nav-item" href="https://data.adj.news/reporting/" style="text-decoration: none">Reporting</a>
-        <a class="nav-item" href="https://api.data.adj.news" style="text-decoration: none">API</a>
         <a class="nav-item" href="https://adj.news" style="text-decoration: none">News</a>
         <a class="nav-item" href="https://press.adjacentresearch.xyz" style="text-decoration: none">Press</a>
       </nav>
