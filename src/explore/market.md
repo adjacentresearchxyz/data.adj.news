@@ -86,6 +86,13 @@ let exaNews = fetch(`https://api.data.adj.news/api/news/${filteredMarket[0].titl
     return transformedNews.slice(0,4)
   })
   .catch(err => console.error('Error fetching related news:', err));
+
+let relatedMarkets = fetch('https://api.data.adj.news/api/markets/related/' + filteredMarket[0].adj_ticker)
+  .then(response => response.json())
+  .then(data => {
+    return data;
+  })
+  .catch(err => console.error(err));
 ```
 
 ```js
@@ -185,29 +192,6 @@ function trend(v) {
   return v >= 0.005 ? html`<span class="green">↗︎</span>`
     : v <= -0.005 ? html`<span class="red">↘︎</span>`
     : "→";
-}
-```
-
-```js
-function newsCard(market, relatedNews) {
-  return htl.html`
-    <h2>Related News</h2>
-    <table>
-      ${relatedNews.map(news => `
-        <tr>
-          <td style="padding-top: 15px;">
-            <a href="${news.url}" style="text-decoration: underline; text-decoration-thickness: 0.5px; text-underline-offset: 1px;">
-              <h3>${news.title} - via ${news.source}</h3>
-            </a>
-          </td>
-          <td align="right">
-            <p>${new Date(news.updated_at).toLocaleDateString()}</p>
-          </td>
-        </tr>
-      `).join('')}
-    </table>
-    <a href="#" style="text-decoration: underline; text-decoration-thickness: 0.5px; text-underline-offset: 1px;">Read More</a>
-  `;
 }
 ```
 
@@ -381,4 +365,19 @@ const link = filteredMarket[0].link
       })
     )}
   </div>
+</div>
+
+<div class="grid grid-cols-3 gap-4" style="margin-top: 2rem;">
+  ${relatedMarkets.map(market => htl.html`
+    <div class='card'>
+      <h2>${market.question}</h2>
+      <h1>${market.probability}%</h1>
+      <table>
+        <!-- <tr>
+          <td>Probability</td>
+          <td align="right">${formatPercent(market.probability, {signDisplay: "never"})}</td>
+        </tr> -->
+      </table>
+    </div>
+  `)}
 </div>
