@@ -1,0 +1,12 @@
+.DS_Store
+.env
+dist/
+src/.observablehq/cache/
+node_modules/
+yarn-error.log
+.nix-node
+.venv
+functions/supabase/.branches
+functions/supabase/.temp
+functions/cloudflare/adjacent-data-etl/.dev.vars
+test
