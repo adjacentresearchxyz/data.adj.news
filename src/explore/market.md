@@ -69,9 +69,6 @@ const colorLegend = (y) => html`<span style="border-bottom: solid 2px ${color.ap
 ```
 
 ```js
-
-// @TODO these can all be condensed into a single query with multiple selects
-
 const [probabilityData] = await db.query(`
   SELECT 
     MAX(probability) AS highest_probability,
