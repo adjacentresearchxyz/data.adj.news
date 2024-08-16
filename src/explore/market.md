@@ -1,8 +1,3 @@
----
-title: Title
-variable: Variable
----
-
 ```js
 // get ticker from url
 const urlParams = new URLSearchParams(window.location.search);
@@ -69,9 +64,6 @@ const colorLegend = (y) => html`<span style="border-bottom: solid 2px ${color.ap
 ```
 
 ```js
-
-// @TODO these can all be condensed into a single query with multiple selects
-
 const [probabilityData] = await db.query(`
   SELECT 
     MAX(probability) AS highest_probability,
@@ -131,13 +123,15 @@ const [rowSevenDaysAgo] = await db.query(`
   ORDER BY timestamp DESC
   LIMIT 1
 `);
-const weekTrades = await db.query(`
-  SELECT *
-  FROM trades
-  WHERE adj_ticker = '${ticker}'
-    AND timestamp >= ${sevenDaysAgo}
-    AND timestamp < ${sevenDaysAgo + 24 * 60 * 60}
-  ORDER BY timestamp DESC
+const latestTrades = await db.query(`
+ SELECT * FROM (
+    SELECT *,
+           ROW_NUMBER() OVER (ORDER BY timestamp DESC) AS row_num,
+           COUNT(*) OVER () AS total_rows
+    FROM trades
+    WHERE adj_ticker = 'ADJ-POLYMARKET-WILL-DONALD-TRUMP-WIN-THE-2024-US-PRESIDENTIAL-ELECTION'
+  ) subquery
+  WHERE row_num < CEIL(total_rows * 0.1)
 `);
 
 // 10 days ago
@@ -388,7 +382,7 @@ function trend(v) {
     `}
   </div>
   <div class="card grid-colspan-2 grid-rowspan-2" style="display: flex; flex-direction: column;">
-    <h2>1wk. Probability</h2><br>
+    <h2>Latest Probability</h2><br>
     <span style="flex-grow: 1;">${resize((width, height) =>
       Plot.plot({
         width,
@@ -400,7 +394,7 @@ function trend(v) {
         },
         color,
         marks: [
-          Plot.lineY(weekTrades, {
+          Plot.lineY(latestTrades, {
             x: d => new Date(d.timestamp * 1000),
             y: "probability",
             tip: true
