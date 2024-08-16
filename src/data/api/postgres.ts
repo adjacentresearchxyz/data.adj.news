@@ -2,7 +2,7 @@ import "dotenv/config";
 import type {Row, Sql} from "postgres";
 import postgres from "postgres";
 
-const {POSTGRES_URL} = process.env;
+const POSTGRES_URL = process.env.NEXT_PUBLIC_POSTGRES_URL;
 
 if (!POSTGRES_URL) throw new Error("Missing POSTGRES_URL");
 
