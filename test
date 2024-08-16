@@ -1,7 +1,0 @@
-SUPABASE_URL=https://fyeyeurwgxklumxgpcgz.supabase.co
-SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5ZXlldXJ3Z3hrbHVteGdwY2d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTU3MTgyNjIsImV4cCI6MjAzMTI5NDI2Mn0.utusSnNnNZTH0eHnGy-k-ex_yfTkPoPftQ9tO_R5a7o
-
-KALSHI_EMAIL=kohorstlucas@gmail.com
-KALSHI_PASSWORD=Helpful-Monster-Sera-2shed-Society-Geek5
-
-NEXT_PUBLIC_POSTGRES_URL=postgres://postgres.fyeyeurwgxklumxgpcgz:XF7IQ7mPtSxZJJbO@aws-0-us-east-1.pooler.supabase.com:5432/postgres?pgbouncer=true&connection_limit=1
