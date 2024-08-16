@@ -12,7 +12,7 @@ export default {
       path: "/",
     }
   ],
-  footer: `<div>
+  footer: ({title, data, path}) => `<div>
       <div>
         <a target="_blank" href="https://adj.news"><span>News</span></a> /
         <a target="_blank" href="https://adjacentresearch.substack.com"><span>Press</span></a>

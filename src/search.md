@@ -143,7 +143,7 @@ let filteredMarkets = await db.query("SELECT * FROM markets WHERE status = 'acti
 let [filteredMarketsCount] = await db.query("SELECT COUNT(*) as count from markets WHERE status = 'active'")
 const searchMarkets = view(Inputs.search(filteredMarkets, {
     placeholder: `Search ${formatNumber(filteredMarketsCount.count)} prediction markets`,
-    width: "95%",
+    width: "90%",
     query: query,
 }));
 ```
