@@ -1,77 +1,45 @@
+---
+title: Title
+variable: Variable
+---
+
 ```js
+// get ticker from url
 const urlParams = new URLSearchParams(window.location.search);
 const ticker = urlParams.get('ticker');
 
-// csv for market and trade information
-const markets = FileAttachment("../data/api/markets.csv").csv({typed: true});
-const trades = FileAttachment("../data/api/trades.csv").csv({typed: true});
-
-const filteredTrades = trades
-  .then(rows => {
-    // Filter rows based on adj_ticker
-    const filteredRows = rows.filter(row => row['adj_ticker'] === ticker);
-    
-    // Ensure all timestamp values are unique
-    const uniqueTimestamps = new Set();
-    const uniqueRows = filteredRows.filter(row => {
-      if (uniqueTimestamps.has(row['date'])) {
-        return false;
-      } else {
-        uniqueTimestamps.add(row['date']);
-        return true;
-      }
-    });
-
-    return uniqueRows;
-  });
-
-// all data but cleaned
-const tidy = filteredTrades.then((rows) => rows.flatMap(({date, probability, daily_volatility}) => [{date: date, probability: probability * 100, type: "Probability"}]));
-
-// daily data for download and stats
-const daily = filteredTrades.then((rows) => {
-  const dailyData = rows.reduce((acc, {date, probability, daily_volatility}) => {
-    const formattedDate = new Date(date).setHours(0, 0, 0, 0);
-    const formattedDateString = new Date(formattedDate).toLocaleDateString('en-US');
-    if (!acc[formattedDateString]) {
-      acc[formattedDateString] = {date: formattedDateString, probability: 0, volatility: 0, count: 0};
-    }
-    acc[formattedDateString].probability += probability;
-    acc[formattedDateString].volatility += daily_volatility;
-    acc[formattedDateString].count++;
-    return acc;
-  }, {});
-  return Object.values(dailyData).map(({date, probability, volatility, count}) => ({
-    date: date,
-    probability: Math.round((probability / count * 100) * 100) / 100,
-    volatility: volatility,
-    type: "probability"
-  }));
+// load parquet files
+const db = DuckDBClient.of({
+  markets: FileAttachment("../data/api/markets.parquet"),
+  trades: FileAttachment("../data/api/trades.parquet")
 });
-
-const filteredMarket = markets
-  .then(rows => {
-    const filteredRows = rows.filter(row => row['adj_ticker'] === ticker);
-    if (!filteredRows || filteredRows.length < 1) {
-      window.location.href = '/';
-    }
-    return filteredRows;
-  })
-  .catch(error => {
-    console.error('Error filtering market data:', error);
-    window.location.href = '/';
-  });
 ```
 
 ```js
-let relatedNews = fetch('https://api.data.adj.news/api/news/market/' + filteredMarket[0].adj_ticker)
+// filter markets and trades down
+let filteredTrades = await db.query(`SELECT * FROM trades WHERE adj_ticker = '${ticker}'`)
+let [filteredTradesCount] = await db.query(`SELECT COUNT(*) as count FROM trades WHERE adj_ticker = '${ticker}'`)
+
+// get daily markets
+
+let [filteredMarket] = await db.query(`SELECT * FROM markets WHERE adj_ticker = '${ticker}'`)
+let [filteredMarketCount] = await db.query(`SELECT COUNT(*) as count FROM markets WHERE adj_ticker = '${ticker}'`)
+
+// redirect if no market or no trades
+if (filteredTradesCount.count < 1 || filteredMarketCount.count < 1) {
+   window.location.href = '/';
+}
+```
+
+```js
+let relatedNews = fetch('https://api.data.adj.news/api/news/market/' + filteredMarket.adj_ticker)
   .then(response => response.json())
   .then(data => {
     return data;
   })
   .catch(err => console.error(err));
 
-let exaNews = fetch(`https://api.data.adj.news/api/news/${filteredMarket[0].title}`)
+let exaNews = fetch(`https://api.data.adj.news/api/news/${filteredMarket.question}`)
   .then(response => response.json())
   .then(data => {
     const transformedNews = data.results.map(news => ({
@@ -87,7 +55,7 @@ let exaNews = fetch(`https://api.data.adj.news/api/news/${filteredMarket[0].titl
   })
   .catch(err => console.error('Error fetching related news:', err));
 
-let relatedMarkets = fetch('https://api.data.adj.news/api/markets/related/' + filteredMarket[0].adj_ticker)
+let relatedMarkets = fetch('https://api.data.adj.news/api/markets/related/' + filteredMarket.adj_ticker + '?threshold=0.85')
   .then(response => response.json())
   .then(data => {
     return data;
@@ -101,39 +69,188 @@ const colorLegend = (y) => html`<span style="border-bottom: solid 2px ${color.ap
 ```
 
 ```js
+
+// @TODO these can all be condensed into a single query with multiple selects
+
+const [probabilityData] = await db.query(`
+  SELECT 
+    MAX(probability) AS highest_probability,
+    MIN(probability) AS lowest_probability
+  FROM trades
+  WHERE adj_ticker = '${ticker}'
+`);
+
+// first trade date
+const [firstDate] = await db.query(`SELECT *
+  FROM trades
+  WHERE adj_ticker = '${ticker}'
+  ORDER BY timestamp ASC
+  LIMIT 1`
+)
+
+// latest trade date
+const [latestDate] = await db.query(`SELECT *
+  FROM trades
+  WHERE adj_ticker = '${ticker}'
+  ORDER BY timestamp DESC
+  LIMIT 1`
+)
+
+// 10% into the rows for initial table load
+const [tenthPercentRow] = await db.query(`
+  SELECT * FROM (
+    SELECT *,
+           ROW_NUMBER() OVER (ORDER BY timestamp DESC) AS row_num,
+           COUNT(*) OVER () AS total_rows
+    FROM trades
+    WHERE adj_ticker = '${ticker}'
+  ) subquery
+  WHERE row_num = CEIL(total_rows * 0.1)
+`);
+
+// 1 day ago
+const oneDayAgo = Math.floor(Date.now() / 1000) - (1 * 24 * 60 * 60);
+const [rowOneDayAgo] = await db.query(`
+  SELECT *
+  FROM trades
+  WHERE adj_ticker = '${ticker}'
+    AND timestamp >= ${oneDayAgo}
+    AND timestamp < ${oneDayAgo + 24 * 60 * 60}
+  ORDER BY timestamp DESC
+  LIMIT 1
+`);
+
+// 1wk ago 
+const sevenDaysAgo = Math.floor(Date.now() / 1000) - (7 * 24 * 60 * 60);
+const [rowSevenDaysAgo] = await db.query(`
+  SELECT *
+  FROM trades
+  WHERE adj_ticker = '${ticker}'
+    AND timestamp >= ${sevenDaysAgo}
+    AND timestamp < ${sevenDaysAgo + 24 * 60 * 60}
+  ORDER BY timestamp DESC
+  LIMIT 1
+`);
+const weekTrades = await db.query(`
+  SELECT *
+  FROM trades
+  WHERE adj_ticker = '${ticker}'
+    AND timestamp >= ${sevenDaysAgo}
+    AND timestamp < ${sevenDaysAgo + 24 * 60 * 60}
+  ORDER BY timestamp DESC
+`);
+
+// 10 days ago
+const tenDaysAgo = Math.floor(Date.now() / 1000) - (10 * 24 * 60 * 60);
+const [rowTenDaysAgoAvg] = await db.query(`
+  SELECT AVG(probability) AS ten_day_average
+  FROM (
+    SELECT probability
+    FROM trades
+    WHERE adj_ticker = '${ticker}'
+      AND timestamp >= ${tenDaysAgo}
+    ORDER BY timestamp DESC
+    LIMIT 1
+  ) subquery
+`);
+
+// 1mo ago
+const thirtyDaysAgo = Math.floor(Date.now() / 1000) - (30 * 24 * 60 * 60);
+const [rowThirtyDaysAgoAvg] = await db.query(`
+  SELECT AVG(probability) AS thirty_day_average
+  FROM (
+    SELECT probability
+    FROM trades
+    WHERE adj_ticker = '${ticker}'
+      AND timestamp >= ${thirtyDaysAgo}
+    ORDER BY timestamp DESC
+    LIMIT 1
+  ) subquery
+`);
+
+// 1yr ago
+const oneYearAgo = Math.floor(Date.now() / 1000) - (365 * 24 * 60 * 60);
+const [rowOneYearAgo] = await db.query(`
+  SELECT *
+  FROM trades
+  WHERE adj_ticker = '${ticker}'
+    AND timestamp >= ${oneYearAgo}
+    AND timestamp < ${oneYearAgo + 24 * 60 * 60}
+  ORDER BY timestamp DESC
+  LIMIT 1
+`);
+
+
 const defaultStartEnd = [
-  new Date(tidy[Math.floor(tidy.length * 0.9)].date), 
-  new Date(tidy[tidy.length - 1].date)
+  new Date(tenthPercentRow.timestamp * 1000),
+  new Date(latestDate.timestamp * 1000),
 ];
+
 const startEnd = Mutable(defaultStartEnd);
 const setStartEnd = (se) => startEnd.value = (se ?? defaultStartEnd);
 const getStartEnd = () => startEnd.value;
 ```
 
 ```js
+const query = `
+  SELECT *
+  FROM trades
+  WHERE adj_ticker = '${ticker}'
+    AND timestamp >= EXTRACT(EPOCH FROM TIMESTAMP '${new Date(getStartEnd()[0]).toLocaleString('en-US', {
+      weekday: 'short',
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    }).replace(/,/, '')}')
+    AND timestamp < EXTRACT(EPOCH FROM TIMESTAMP '${new Date(getStartEnd()[1]).toLocaleString('en-US', {
+      weekday: 'short',
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    }).replace(/,/, '')}')
+  ORDER BY timestamp DESC
+`
+const dateFilteredTrades = await db.query(query);
+
+const minDate = new Date(firstDate.timestamp * 1000);
+const maxDate = new Date(latestDate.timestamp * 1000);
+```
+
+```js
 function frmCard(y, market) {
   const key = `probability`;
 
-  const today = filteredTrades.at(-1).date;
-  const yesterday = filteredTrades.find(d => new Date(d.date) < new Date(today));
-  const yearAgo = filteredTrades.find(d => new Date(d.date) < new Date(today) && (new Date(today) - new Date(d.date)) / (1000 * 60 * 60 * 24) >= 365);
-  const oneWeekAgo = filteredTrades.find(d => new Date(d.date) < new Date(today) && (new Date(today) - new Date(d.date)) / (1000 * 60 * 60 * 24) >= 7);
-  const oneMonthAgo = filteredTrades.find(d => new Date(d.date) < new Date(today) && (new Date(today) - new Date(d.date)) / (1000 * 60 * 60 * 24) >= 30);
+  const oneDayInSeconds = 24 * 60 * 60;
+  const oneWeekInSeconds = 7 * oneDayInSeconds;
+  const oneMonthInSeconds = 30 * oneDayInSeconds;
+  const oneYearInSeconds = 365 * oneDayInSeconds;
 
-  const oneWeekChange = daily.at(-1).probability - (daily.at(-8) ? daily.at(-8).probability : 0);
-  const tenDayAvg = d3.mean(daily.slice(-10), (d) => d.probability);
-  const oneMonthAvg = d3.mean(daily.slice(-30), (d) => d.probability);
+  const todayUnix = latestDate.timestamp;
+  const today = new Date(latestDate.timestamp);
+  const yesterday = todayUnix - oneDayInSeconds;
+  const oneWeekAgo = todayUnix - oneWeekInSeconds;
+  const oneMonthAgo = todayUnix - oneMonthInSeconds;
+  const yearAgo = todayUnix - oneYearInSeconds;
+
+  const oneWeekChange = latestDate.probability - (rowSevenDaysAgo ? rowSevenDaysAgo.probability : 0);
   
-  const diff1 = filteredTrades.at(-1)[key] - (yesterday ? yesterday[key] : 0);
-  const diffY = filteredTrades.at(-1)[key] - (yearAgo ? yearAgo[key] : 0);
+  const diff1 = latestDate.probability - (rowOneDayAgo ? rowOneDayAgo.probability : 0);
+  const diffY = latestDate.probability - (rowOneYearAgo ? rowOneYearAgo.probability : 0);
 
-  const avgVolatility = d3.mean(daily, (d) => d.volatility);
+  // const avgVolatility = d3.mean(filteredTrades, (d) => d.daily_volatility);
 
   const stroke = color.apply(`Probability`);
 
   return html.fragment`
-    <h2>${y}</h2>
-    <h1>${formatPercent(filteredTrades.at(-1)[key] * 100)}</h1>
+    <h1>${formatPercent(latestDate.probability * 100)}</h1>
     <table>
       <tr>
         <td>1-day change</td>
@@ -147,15 +264,11 @@ function frmCard(y, market) {
       </tr>
       <tr>
         <td>10-day average</td>
-        <td align="right">${formatPercent(tenDayAvg)}</td>
+        <td align="right">${formatPercent(rowTenDaysAgoAvg.ten_day_average)}</td>
       </tr>
       <tr>
         <td>1-month average</td>
-        <td align="right">${formatPercent(oneMonthAvg)}</td>
-      </tr>
-      <tr>
-        <td>Average Volatility</td>
-        <td align="right">${formatPercent(avgVolatility)}</td>
+        <td align="right">${formatPercent(rowThirtyDaysAgoAvg.thirty_day_average)}</td>
       </tr>
     </table>
     ${resize((width) =>
@@ -165,17 +278,17 @@ function frmCard(y, market) {
         axis: null,
         x: {inset: 40},
         marks: [
-          Plot.tickX(daily.slice(-52), {
+          Plot.tickX(filteredTrades, {
             x: key,
             stroke,
             insetTop: 10,
             insetBottom: 10,
-            title: (d) => `${new Date(d.date)?.toLocaleDateString("en-us")}: ${d[key]}%`,
+            title: (d) => `${new Date(d.timestamp * 1000)?.toLocaleDateString("en-us")}: ${d.probability}%`,
             tip: {anchor: "bottom"}
           }),
-          Plot.tickX(daily.slice(-1), {x: key, strokeWidth: 1}),
-          Plot.text([`${formatPercent(Math.min(daily[0][key], daily[daily.length - 1][key]), {signDisplay: "never"})}`], {frameAnchor: "left"}),
-          Plot.text([`${formatPercent(Math.max(daily[0][key], daily[daily.length - 1][key]), {signDisplay: "never"})}`], {frameAnchor: "right"})
+          Plot.tickX(latestDate, {x: key, strokeWidth: 1}),
+          Plot.text([`${formatPercent(probabilityData.lowest_probability, {signDisplay: "never"})}`], {frameAnchor: "left"}),
+          Plot.text([`${formatPercent(probabilityData.highest_probability, {signDisplay: "never"})}`], {frameAnchor: "right"})
         ]
       })
     )}
@@ -193,18 +306,6 @@ function trend(v) {
     : v <= -0.005 ? html`<span class="red">↘︎</span>`
     : "→";
 }
-```
-
-```js
-const filteredData = tidy.filter((d) => startEnd[0] <= new Date(d.date) && new Date(d.date) < startEnd[1])
-      .map(d => ({...d, date: new Date(d.date)}));
-const dates = filteredData.map(d => new Date(d.date));
-const minDate = d3.min(dates);
-const maxDate = d3.max(dates);
-```
-
-```js
-const link = filteredMarket[0].link
 ```
 
 <style type="text/css">
@@ -234,38 +335,32 @@ const link = filteredMarket[0].link
 </style>
 
 <div>
-  <h1>${filteredMarket[0]['question']}</h1>
-  <code>${filteredMarket[0].adj_ticker}</code>
+  <h1>${filteredMarket.question}</h1>
+  <code>${filteredMarket.adj_ticker}</code>
   <details open>
     <summary>Read Full Rules</summary>
-    <p>${filteredMarket[0]['description']}</p>
+    <p>${filteredMarket.description}</p>
   </details>
 <div>
 
 <div style="display: flex; gap: 10px;">
   <div>${Inputs.button([
     ["Trade", () => {
-      window.open(link, '_blank');
+      window.open(filteredMarket.link, '_blank');
     }],
     ["Download", () => {
-      const header = Object.keys(daily[0]).filter(key => key !== 'type').join(',');
-      const csv = daily.map(row => 
-        Object.entries(row)
-          .filter(([key]) => key !== 'type')
-          .map(([, value]) => value)
-          .join(',')
-      ).join('\n');
-      const csvWithHeader = `${header}\n${csv}`;
-      const blob = new Blob([csvWithHeader], {type: 'text/csv'});
+      const json = filteredTrades
+      const blob = new Blob([json]);
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
       const date = new Date();
       const dateString = `${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()}`;
-      link.download = `${filteredMarket[0].adj_ticker}-trades-${dateString}.csv`;
+      link.download = `${filteredMarket.adj_ticker}-trades-${dateString}.json`;
       link.click();
     }]
   ], {value: null})}</div>
 </div>
+
 
 <div class="grid grid-cols-2-3" style="margin-top: 2rem;">
   <div class="card">${frmCard('Probability', filteredTrades)}</div>
@@ -290,30 +385,24 @@ const link = filteredMarket[0].link
           </td>
         `) : ''}
       </table>
-      <div style="position: relative; height: 10%;">
-        <a href="#" style="position: absolute; bottom: 0; left: 0; text-decoration: underline; text-decoration-thickness: 0.5px; text-underline-offset: 1px;">Read More</a>
-      </div>
     `}
   </div>
   <div class="card grid-colspan-2 grid-rowspan-2" style="display: flex; flex-direction: column;">
-    <h2>Focused Probability</h2><br>
+    <h2>1wk. Probability</h2><br>
     <span style="flex-grow: 1;">${resize((width, height) =>
       Plot.plot({
         width,
         height,
         y: {grid: true, label: "Probability (%)"},
         x: {
-          type: "time",
-          domain: [minDate, maxDate],
           ticks: 10,
           label: "Date",
         },
         color,
         marks: [
-          Plot.lineY(filteredData, {
-            x: "date", 
+          Plot.lineY(weekTrades, {
+            x: d => new Date(d.timestamp * 1000),
             y: "probability",
-            stroke: "type", 
             tip: true
           }),
         ]
@@ -328,56 +417,37 @@ const link = filteredMarket[0].link
     <h3>Click or drag to zoom</h3><br>
     ${resize((width) =>
       Plot.plot({
+        type: "utc",
         width,
         y: {grid: true, label: "Probability (%)"},
         color,
         marks: [
-          Plot.ruleY([0]),
-          Plot.lineY(tidy.map(d => ({...d, date: new Date(d.date)})), {x: "date", y: "probability", stroke: "type", tip: true}),
-          (index, scales, channels, dimensions, context) => {
-            const x1 = dimensions.marginLeft;
-            const y1 = 0;
-            const x2 = dimensions.width - dimensions.marginRight;
-            const y2 = dimensions.height;
-            const brushed = (event) => {
-              if (!event.sourceEvent) return;
-              let {selection} = event;
-              if (!selection) {
-                const r = 10; // radius of point-based selection
-                let [px] = d3.pointer(event, context.ownerSVGElement);
-                px = Math.max(x1 + r, Math.min(x2 - r, px));
-                selection = [px - r, px + r];
-                g.call(brush.move, selection);
-              }
-              setStartEnd(selection.map(scales.x.invert));
-            };
-            const pointerdowned = (event) => {
-              const pointerleave = new PointerEvent("pointerleave", {bubbles: true, pointerType: "mouse"});
-              event.target.dispatchEvent(pointerleave);
-            };
-            const brush = d3.brushX().extent([[x1, y1], [x2, y2]]).on("brush end", brushed);
-            const g = d3.create("svg:g").call(brush);
-            g.call(brush.move, getStartEnd().map(scales.x));
-            g.on("pointerdown", pointerdowned);
-            return g.node();
-          }
+          Plot.lineY(filteredTrades, {
+            x: d => new Date(d.timestamp * 1000),
+            y: "probability", 
+            tip: true
+          })
         ]
       })
     )}
   </div>
 </div>
 
-<div class="grid grid-cols-3 gap-4" style="margin-top: 2rem;">
-  ${relatedMarkets.map(market => htl.html`
-    <div class='card'>
-      <h2>${market.question}</h2>
-      <h1>${market.probability}%</h1>
-      <table>
-        <!-- <tr>
-          <td>Probability</td>
-          <td align="right">${formatPercent(market.probability, {signDisplay: "never"})}</td>
-        </tr> -->
-      </table>
-    </div>
-  `)}
+<div style="margin-top: 2rem;">
+  ${relatedMarkets ? relatedMarkets.map(market => htl.html`
+      <a href="/explore/market?ticker=${market.adj_ticker}" style="text-decoration: none; color: inherit;">
+        <div class='card' style='padding-right: 1em'>
+          <h2>${market.question}</h2>
+          <h1>${market.probability}%</h1>
+          <p>${market.description}</p>
+          <table>
+            <!-- <tr>
+              <td>Probability</td>
+              <td align="right">${formatPercent(market.probability, {signDisplay: "never"})}</td>
+            </tr> -->
+          </table>
+        </div>
+      </a>
+    `) : ''}
+  </div>
 </div>
