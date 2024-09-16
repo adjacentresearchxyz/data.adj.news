@@ -1,8 +1,3 @@
----
-title: Title
-variable: Variable
----
-
 ```js
 // get ticker from url
 const urlParams = new URLSearchParams(window.location.search);
@@ -32,7 +27,7 @@ if (filteredTradesCount.count < 1 || filteredMarketCount.count < 1) {
 ```
 
 ```js
-let relatedNews = fetch('https://api.data.adj.news/api/news/market/' + filteredMarket.adj_ticker)
+let relatedNews = fetch('https://api.data.adj.news/api/news/market/' + filteredMarket.question)
   .then(response => response.json())
   .then(data => {
     return data;
@@ -55,7 +50,7 @@ let exaNews = fetch(`https://api.data.adj.news/api/news/${filteredMarket.questio
   })
   .catch(err => console.error('Error fetching related news:', err));
 
-let relatedMarkets = fetch('https://api.data.adj.news/api/markets/related/' + filteredMarket.adj_ticker + '?threshold=0.85')
+let relatedMarkets = fetch('https://api.data.adj.news/api/markets/related/' + filteredMarket.question + '?threshold=0.85')
   .then(response => response.json())
   .then(data => {
     return data;
@@ -71,8 +66,8 @@ const colorLegend = (y) => html`<span style="border-bottom: solid 2px ${color.ap
 ```js
 const [probabilityData] = await db.query(`
   SELECT 
-    MAX(probability) AS highest_probability,
-    MIN(probability) AS lowest_probability
+    MAX(midpoint) AS highest_probability,
+    MIN(midpoint) AS lowest_probability
   FROM trades
   WHERE adj_ticker = '${ticker}'
 `);
@@ -81,7 +76,7 @@ const [probabilityData] = await db.query(`
 const [firstDate] = await db.query(`SELECT *
   FROM trades
   WHERE adj_ticker = '${ticker}'
-  ORDER BY timestamp ASC
+  ORDER BY reported_date ASC
   LIMIT 1`
 )
 
@@ -89,7 +84,7 @@ const [firstDate] = await db.query(`SELECT *
 const [latestDate] = await db.query(`SELECT *
   FROM trades
   WHERE adj_ticker = '${ticker}'
-  ORDER BY timestamp DESC
+  ORDER BY reported_date DESC
   LIMIT 1`
 )
 
@@ -97,7 +92,7 @@ const [latestDate] = await db.query(`SELECT *
 const [tenthPercentRow] = await db.query(`
   SELECT * FROM (
     SELECT *,
-           ROW_NUMBER() OVER (ORDER BY timestamp DESC) AS row_num,
+           ROW_NUMBER() OVER (ORDER BY reported_date DESC) AS row_num,
            COUNT(*) OVER () AS total_rows
     FROM trades
     WHERE adj_ticker = '${ticker}'
@@ -111,9 +106,9 @@ const [rowOneDayAgo] = await db.query(`
   SELECT *
   FROM trades
   WHERE adj_ticker = '${ticker}'
-    AND timestamp >= ${oneDayAgo}
-    AND timestamp < ${oneDayAgo + 24 * 60 * 60}
-  ORDER BY timestamp DESC
+    AND reported_date >= ${oneDayAgo}
+    AND reported_date < ${oneDayAgo + 24 * 60 * 60}
+  ORDER BY reported_date DESC
   LIMIT 1
 `);
 
@@ -123,18 +118,18 @@ const [rowSevenDaysAgo] = await db.query(`
   SELECT *
   FROM trades
   WHERE adj_ticker = '${ticker}'
-    AND timestamp >= ${sevenDaysAgo}
-    AND timestamp < ${sevenDaysAgo + 24 * 60 * 60}
-  ORDER BY timestamp DESC
+    AND reported_date >= ${sevenDaysAgo}
+    AND reported_date < ${sevenDaysAgo + 24 * 60 * 60}
+  ORDER BY reported_date DESC
   LIMIT 1
 `);
 const latestTrades = await db.query(`
  SELECT * FROM (
     SELECT *,
-           ROW_NUMBER() OVER (ORDER BY timestamp DESC) AS row_num,
+           ROW_NUMBER() OVER (ORDER BY reported_date DESC) AS row_num,
            COUNT(*) OVER () AS total_rows
     FROM trades
-    WHERE adj_ticker = 'ADJ-POLYMARKET-WILL-DONALD-TRUMP-WIN-THE-2024-US-PRESIDENTIAL-ELECTION'
+    WHERE adj_ticker = '${ticker}'
   ) subquery
   WHERE row_num < CEIL(total_rows * 0.1)
 `);
@@ -142,13 +137,13 @@ const latestTrades = await db.query(`
 // 10 days ago
 const tenDaysAgo = Math.floor(Date.now() / 1000) - (10 * 24 * 60 * 60);
 const [rowTenDaysAgoAvg] = await db.query(`
-  SELECT AVG(probability) AS ten_day_average
+  SELECT AVG(midpoint) AS ten_day_average
   FROM (
-    SELECT probability
+    SELECT midpoint
     FROM trades
     WHERE adj_ticker = '${ticker}'
-      AND timestamp >= ${tenDaysAgo}
-    ORDER BY timestamp DESC
+      AND reported_date >= ${tenDaysAgo}
+    ORDER BY reported_date DESC
     LIMIT 1
   ) subquery
 `);
@@ -156,13 +151,13 @@ const [rowTenDaysAgoAvg] = await db.query(`
 // 1mo ago
 const thirtyDaysAgo = Math.floor(Date.now() / 1000) - (30 * 24 * 60 * 60);
 const [rowThirtyDaysAgoAvg] = await db.query(`
-  SELECT AVG(probability) AS thirty_day_average
+  SELECT AVG(midpoint) AS thirty_day_average
   FROM (
-    SELECT probability
+    SELECT midpoint
     FROM trades
     WHERE adj_ticker = '${ticker}'
-      AND timestamp >= ${thirtyDaysAgo}
-    ORDER BY timestamp DESC
+      AND reported_date >= ${thirtyDaysAgo}
+    ORDER BY reported_date DESC
     LIMIT 1
   ) subquery
 `);
@@ -173,16 +168,16 @@ const [rowOneYearAgo] = await db.query(`
   SELECT *
   FROM trades
   WHERE adj_ticker = '${ticker}'
-    AND timestamp >= ${oneYearAgo}
-    AND timestamp < ${oneYearAgo + 24 * 60 * 60}
-  ORDER BY timestamp DESC
+    AND reported_date >= ${oneYearAgo}
+    AND reported_date < ${oneYearAgo + 24 * 60 * 60}
+  ORDER BY reported_date DESC
   LIMIT 1
 `);
 
 
 const defaultStartEnd = [
-  new Date(tenthPercentRow.timestamp * 1000),
-  new Date(latestDate.timestamp * 1000),
+  new Date(tenthPercentRow.reported_date),
+  new Date(latestDate.reported_date),
 ];
 
 const startEnd = Mutable(defaultStartEnd);
@@ -195,7 +190,7 @@ const query = `
   SELECT *
   FROM trades
   WHERE adj_ticker = '${ticker}'
-    AND timestamp >= EXTRACT(EPOCH FROM TIMESTAMP '${new Date(getStartEnd()[0]).toLocaleString('en-US', {
+    AND reported_date >= EXTRACT(EPOCH FROM TIMESTAMP '${new Date(getStartEnd()[0]).toLocaleString('en-US', {
       weekday: 'short',
       year: 'numeric',
       month: 'short',
@@ -205,7 +200,7 @@ const query = `
       second: '2-digit',
       hour12: false
     }).replace(/,/, '')}')
-    AND timestamp < EXTRACT(EPOCH FROM TIMESTAMP '${new Date(getStartEnd()[1]).toLocaleString('en-US', {
+    AND reported_date < EXTRACT(EPOCH FROM TIMESTAMP '${new Date(getStartEnd()[1]).toLocaleString('en-US', {
       weekday: 'short',
       year: 'numeric',
       month: 'short',
@@ -215,12 +210,12 @@ const query = `
       second: '2-digit',
       hour12: false
     }).replace(/,/, '')}')
-  ORDER BY timestamp DESC
+  ORDER BY reported_date DESC
 `
 const dateFilteredTrades = await db.query(query);
 
-const minDate = new Date(firstDate.timestamp * 1000);
-const maxDate = new Date(latestDate.timestamp * 1000);
+const minDate = new Date(firstDate.reported_date);
+const maxDate = new Date(latestDate.reported_date);
 ```
 
 ```js
@@ -232,24 +227,24 @@ function frmCard(y, market) {
   const oneMonthInSeconds = 30 * oneDayInSeconds;
   const oneYearInSeconds = 365 * oneDayInSeconds;
 
-  const todayUnix = latestDate.timestamp;
-  const today = new Date(latestDate.timestamp);
+  const todayUnix = latestDate.reported_date;
+  const today = new Date(latestDate.reported_date);
   const yesterday = todayUnix - oneDayInSeconds;
   const oneWeekAgo = todayUnix - oneWeekInSeconds;
   const oneMonthAgo = todayUnix - oneMonthInSeconds;
   const yearAgo = todayUnix - oneYearInSeconds;
 
-  const oneWeekChange = latestDate.probability - (rowSevenDaysAgo ? rowSevenDaysAgo.probability : 0);
+  const oneWeekChange = latestDate.midpoint - (rowSevenDaysAgo ? rowSevenDaysAgo.midpoint : 0);
   
-  const diff1 = latestDate.probability - (rowOneDayAgo ? rowOneDayAgo.probability : 0);
-  const diffY = latestDate.probability - (rowOneYearAgo ? rowOneYearAgo.probability : 0);
+  const diff1 = latestDate.midpoint - (rowOneDayAgo ? rowOneDayAgo.midpoint : 0);
+  const diffY = latestDate.midpoint - (rowOneYearAgo ? rowOneYearAgo.midpoint : 0);
 
   // const avgVolatility = d3.mean(filteredTrades, (d) => d.daily_volatility);
 
   const stroke = color.apply(`Probability`);
 
   return html.fragment`
-    <h1>${formatPercent(latestDate.probability * 100)}</h1>
+    <h1>${formatPercent(latestDate.midpoint)}</h1>
     <table>
       <tr>
         <td>1-day change</td>
@@ -282,7 +277,7 @@ function frmCard(y, market) {
             stroke,
             insetTop: 10,
             insetBottom: 10,
-            title: (d) => `${new Date(d.timestamp * 1000)?.toLocaleDateString("en-us")}: ${d.probability}%`,
+            title: (d) => `${new Date(d.reported_date)?.toLocaleDateString("en-us")}: ${d.midpoint}%`,
             tip: {anchor: "bottom"}
           }),
           Plot.tickX(latestDate, {x: key, strokeWidth: 1}),
@@ -335,7 +330,7 @@ function trend(v) {
 
 <div>
   <h1>${filteredMarket.question}</h1>
-  <code>${filteredMarket.adj_ticker}</code>
+  <code>${filteredMarket.ticker}</code>
   <details open>
     <summary>Read Full Rules</summary>
     <p>${filteredMarket.description}</p>
@@ -360,14 +355,13 @@ function trend(v) {
   ], {value: null})}</div>
 </div>
 
-
 <div class="grid grid-cols-2-3" style="margin-top: 2rem;">
   <div class="card">${frmCard('Probability', filteredTrades)}</div>
   <div class="card">
     ${htl.html`
       <h2>Related News</h2>
       <table>
-        ${relatedNews ? relatedNews.map(news => htl.html`
+        ${Array.isArray(relatedNews) ? relatedNews.map(news => htl.html`
           <tr>
             <td style="padding-top: 15px;">
               <a href="${news.url}" style="text-decoration: underline; text-decoration-thickness: 0.5px; text-underline-offset: 1px;">
@@ -375,14 +369,14 @@ function trend(v) {
               </a>
             </td>
           </tr>
-        `): ''}
+        `) : ''}
         ${!relatedNews || relatedNews.length < 2 ? exaNews.map(news => htl.html`
           <td style="padding-top: 15px;">
             <a href="${news.url}" style="text-decoration: underline; text-decoration-thickness: 0.5px; text-underline-offset: 1px;">
               <h3>${news.title} - via ${news.feed_title}</h3>
             </a>
           </td>
-        `) : ''}
+        `) : htl.html`<a href="https://adj.news">Read more at adj.news</a>`}
       </table>
     `}
   </div>
@@ -400,8 +394,8 @@ function trend(v) {
         color,
         marks: [
           Plot.lineY(latestTrades, {
-            x: d => new Date(d.timestamp * 1000),
-            y: "probability",
+            x: d => new Date(d.reported_date),
+            y: "midpoint",
             tip: true
           }),
         ]
@@ -422,8 +416,8 @@ function trend(v) {
         color,
         marks: [
           Plot.lineY(filteredTrades, {
-            x: d => new Date(d.timestamp * 1000),
-            y: "probability", 
+            x: d => new Date(d.reported_date),
+            y: "midpoint", 
             tip: true
           })
         ]
