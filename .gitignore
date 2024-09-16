@@ -9,3 +9,4 @@ yarn-error.log
 functions/supabase/.branches
 functions/supabase/.temp
 functions/cloudflare/adjacent-data-etl/.dev.vars
+*.parquet
