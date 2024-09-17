@@ -139,8 +139,8 @@ function shuffle(array) {
 ```
 
 ```js
-let filteredMarkets = await db.query("SELECT * FROM markets WHERE status = 'active'")
-let [filteredMarketsCount] = await db.query("SELECT COUNT(*) as count from markets WHERE status = 'active'")
+let filteredMarkets = await db.query("SELECT * FROM markets WHERE (status = 'active' or status = 'true') and probability < 99 and probability > 0")
+let [filteredMarketsCount] = await db.query("SELECT COUNT(*) as count from markets WHERE (status = 'active' or status = 'true') and probability < 99 and probability > 0")
 const searchMarkets = view(Inputs.search(filteredMarkets, {
     placeholder: `Search ${formatNumber(filteredMarketsCount.count)} prediction markets`,
     width: "95%",
