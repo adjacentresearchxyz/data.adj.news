@@ -80,7 +80,7 @@ export default {
 }
 
 .table-responsive > .card {
-  min-width: 600px;
+  min-width: 500px;
 }
 
 a:link.dotted,
@@ -175,7 +175,7 @@ a:visited {
   padding: 1em;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 500px) {
   .menu {
     display: none;
     position: absolute;
@@ -202,7 +202,7 @@ a:visited {
   visibility: visible;
 }
 
-@media screen and (max-width: 768px) {
+@media screen and (max-width: 500px) {
   .menu-icon {
     display: block;
     cursor: pointer;

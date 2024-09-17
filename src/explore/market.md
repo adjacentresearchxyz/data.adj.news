@@ -12,13 +12,12 @@ const db = DuckDBClient.of({
 
 ```js
 // filter markets and trades down
-let filteredTrades = await db.query(`SELECT * FROM trades WHERE adj_ticker = '${ticker}'`)
-let [filteredTradesCount] = await db.query(`SELECT COUNT(*) as count FROM trades WHERE adj_ticker = '${ticker}'`)
+let filteredTrades = await db.query(`SELECT adj_ticker, midpoint, reported_date FROM trades WHERE adj_ticker = '${ticker}'`)
+let [filteredTradesCount] = await db.query(`SELECT COUNT(adj_ticker) as count FROM trades WHERE adj_ticker = '${ticker}'`)
 
 // get daily markets
-
-let [filteredMarket] = await db.query(`SELECT * FROM markets WHERE adj_ticker = '${ticker}'`)
-let [filteredMarketCount] = await db.query(`SELECT COUNT(*) as count FROM markets WHERE adj_ticker = '${ticker}'`)
+let [filteredMarket] = await db.query(`SELECT ticker, adj_ticker, question, description, platform FROM markets WHERE adj_ticker = '${ticker}'`)
+let [filteredMarketCount] = await db.query(`SELECT COUNT(adj_ticker) as count FROM markets WHERE adj_ticker = '${ticker}'`)
 
 // redirect if no market or no trades
 if (filteredTradesCount.count < 1 || filteredMarketCount.count < 1) {
@@ -50,12 +49,12 @@ let exaNews = fetch(`https://api.data.adj.news/api/news/${filteredMarket.questio
   })
   .catch(err => console.error('Error fetching related news:', err));
 
-let relatedMarkets = fetch('https://api.data.adj.news/api/markets/related/' + filteredMarket.question + '?threshold=0.85')
-  .then(response => response.json())
-  .then(data => {
-    return data;
-  })
-  .catch(err => console.error(err));
+// let relatedMarkets = fetch('https://api.data.adj.news/api/markets/related/' + filteredMarket.question + '?threshold=0.85')
+//   .then(response => response.json())
+//   .then(data => {
+//     return data;
+//   })
+//   .catch(err => console.error(err));
 ```
 
 ```js
@@ -102,78 +101,72 @@ const [tenthPercentRow] = await db.query(`
 
 // 1 day ago
 const oneDayAgo = Math.floor(Date.now() / 1000) - (1 * 24 * 60 * 60);
+const oneDayAgoDate = new Date(oneDayAgo * 1000);
+const nextDayAgoDate = new Date(oneDayAgo * 1000 + 24 * 60 * 60 * 1000);
 const [rowOneDayAgo] = await db.query(`
-  SELECT *
+  SELECT midpoint
   FROM trades
   WHERE adj_ticker = '${ticker}'
-    AND reported_date >= ${oneDayAgo}
-    AND reported_date < ${oneDayAgo + 24 * 60 * 60}
+    AND reported_date >= '${oneDayAgoDate.toISOString().split('T')[0]}'
+    AND reported_date < '${nextDayAgoDate.toISOString().split('T')[0]}'
   ORDER BY reported_date DESC
   LIMIT 1
 `);
 
 // 1wk ago 
-const sevenDaysAgo = Math.floor(Date.now() / 1000) - (7 * 24 * 60 * 60);
+const sevenDaysAgo = new Date(Math.floor(Date.now() / 1000) - (7 * 24 * 60 * 60));
+const nextSevenDaysAgoDate = new Date(sevenDaysAgo * 1000 + 24 * 60 * 60 * 1000);
 const [rowSevenDaysAgo] = await db.query(`
-  SELECT *
+  SELECT midpoint
   FROM trades
   WHERE adj_ticker = '${ticker}'
-    AND reported_date >= ${sevenDaysAgo}
-    AND reported_date < ${sevenDaysAgo + 24 * 60 * 60}
+    AND reported_date >= '${sevenDaysAgo.toISOString().split('T')[0]}'
+    AND reported_date < '${nextSevenDaysAgoDate.toISOString().split('T')[0]}'
   ORDER BY reported_date DESC
   LIMIT 1
 `);
-const latestTrades = await db.query(`
- SELECT * FROM (
-    SELECT *,
-           ROW_NUMBER() OVER (ORDER BY reported_date DESC) AS row_num,
-           COUNT(*) OVER () AS total_rows
-    FROM trades
-    WHERE adj_ticker = '${ticker}'
-  ) subquery
-  WHERE row_num < CEIL(total_rows * 0.1)
-`);
 
 // 10 days ago
-const tenDaysAgo = Math.floor(Date.now() / 1000) - (10 * 24 * 60 * 60);
+const tenDaysAgo = new Date(Math.floor(Date.now()) - (10 * 24 * 60 * 60 * 1000))
 const [rowTenDaysAgoAvg] = await db.query(`
   SELECT AVG(midpoint) AS ten_day_average
   FROM (
     SELECT midpoint
     FROM trades
     WHERE adj_ticker = '${ticker}'
-      AND reported_date >= ${tenDaysAgo}
+      AND reported_date >= '${tenDaysAgo.toISOString().split('T')[0]}'
     ORDER BY reported_date DESC
-    LIMIT 1
   ) subquery
 `);
 
 // 1mo ago
-const thirtyDaysAgo = Math.floor(Date.now() / 1000) - (30 * 24 * 60 * 60);
+const thirtyDaysAgo = new Date(Math.floor(Date.now()) - (30 * 24 * 60 * 60 * 1000))
 const [rowThirtyDaysAgoAvg] = await db.query(`
   SELECT AVG(midpoint) AS thirty_day_average
   FROM (
     SELECT midpoint
     FROM trades
     WHERE adj_ticker = '${ticker}'
-      AND reported_date >= ${thirtyDaysAgo}
+      AND reported_date >= '${thirtyDaysAgo.toISOString().split('T')[0]}'
     ORDER BY reported_date DESC
-    LIMIT 1
   ) subquery
 `);
 
 // 1yr ago
-const oneYearAgo = Math.floor(Date.now() / 1000) - (365 * 24 * 60 * 60);
+const oneYearAgo = new Date();
+oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+const oneYearAgoUnix = Math.floor(oneYearAgo.getTime() / 1000);
+const oneYearAgoDate = new Date(oneYearAgoUnix * 1000);
+const nextOneYearAgoDate = new Date(oneYearAgoUnix * 1000 + 24 * 60 * 60 * 1000);
 const [rowOneYearAgo] = await db.query(`
-  SELECT *
+  SELECT midpoint
   FROM trades
   WHERE adj_ticker = '${ticker}'
-    AND reported_date >= ${oneYearAgo}
-    AND reported_date < ${oneYearAgo + 24 * 60 * 60}
+    AND reported_date >= '${oneYearAgoDate.toISOString().split('T')[0]}'
+    AND reported_date < '${nextOneYearAgoDate.toISOString().split('T')[0]}'
   ORDER BY reported_date DESC
   LIMIT 1
 `);
-
 
 const defaultStartEnd = [
   new Date(tenthPercentRow.reported_date),
@@ -186,34 +179,6 @@ const getStartEnd = () => startEnd.value;
 ```
 
 ```js
-const query = `
-  SELECT *
-  FROM trades
-  WHERE adj_ticker = '${ticker}'
-    AND reported_date >= EXTRACT(EPOCH FROM TIMESTAMP '${new Date(getStartEnd()[0]).toLocaleString('en-US', {
-      weekday: 'short',
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false
-    }).replace(/,/, '')}')
-    AND reported_date < EXTRACT(EPOCH FROM TIMESTAMP '${new Date(getStartEnd()[1]).toLocaleString('en-US', {
-      weekday: 'short',
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false
-    }).replace(/,/, '')}')
-  ORDER BY reported_date DESC
-`
-const dateFilteredTrades = await db.query(query);
-
 const minDate = new Date(firstDate.reported_date);
 const maxDate = new Date(latestDate.reported_date);
 ```
@@ -302,6 +267,19 @@ function trend(v) {
 }
 ```
 
+```js
+const latestTradesArray = filteredTrades.toString().match(/{[^}]+}/g);
+
+// Parse each JSON string and create the desired object structure
+const latestTradesParsedArray = latestTradesArray.map(jsonStr => {
+  const obj = JSON.parse(jsonStr);
+  return {
+    reported_date: obj.reported_date,
+    midpoint: obj.midpoint
+  };
+});
+```
+
 <style type="text/css">
 
 /* @keyframes blink {
@@ -330,7 +308,7 @@ function trend(v) {
 
 <div>
   <h1>${filteredMarket.question}</h1>
-  <code>${filteredMarket.ticker}</code>
+  <code>${filteredMarket.ticker} via ${filteredMarket.platform.charAt(0).toUpperCase() + filteredMarket.platform.slice(1)}</code>
   <details open>
     <summary>Read Full Rules</summary>
     <p>${filteredMarket.description}</p>
@@ -340,10 +318,16 @@ function trend(v) {
 <div style="display: flex; gap: 10px;">
   <div>${Inputs.button([
     ["Trade", () => {
-      window.open(filteredMarket.link, '_blank');
+      if (filteredMarket.platform === 'polymarket') {
+        window.open(`https://polymarket.com/markets?_q=${filteredMarket.question}`, '_blank');
+      } else if (filteredMarket.platform === 'kalshi') {
+        window.open(`https://kalshi.com/events/${filteredMarket.adj_ticker.replace('adj-', '')}`, '_blank');
+      } else {
+        window.open(filteredMarket.link, '_blank');
+      }
     }],
     ["Download", () => {
-      const json = filteredTrades
+      const json = JSON.stringify(filteredTrades, (key, value) => typeof value === 'bigint' ? value.toString() : value);
       const blob = new Blob([json]);
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
@@ -351,8 +335,39 @@ function trend(v) {
       const dateString = `${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()}`;
       link.download = `${filteredMarket.adj_ticker}-trades-${dateString}.json`;
       link.click();
-    }]
-  ], {value: null})}</div>
+    }],
+    ["API", () => {
+      const modal = document.createElement('div');
+      modal.style.position = 'fixed';
+      modal.style.top = '50%';
+      modal.style.left = '50%';
+      modal.style.transform = 'translate(-50%, -50%)';
+      modal.style.padding = '20px';
+      modal.style.borderRadius = '5px';
+      modal.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)';
+      modal.style.zIndex = '1000';
+      modal.style.backgroundColor = 'rgba(0, 0, 0)';
+      modal.innerHTML = `
+        <button style="position: absolute; top: 10px; right: 10px; cursor: pointer;" onclick="document.body.removeChild(this.parentElement)">X</button>
+        <a href="https://docs.adj.news" style="color: white; text-decoration: underline;"><h2 style="color: white;">Adjacent News API</h2></a>
+        <h3>Related News</h3>
+        <div>
+          <pre style="white-space: pre-wrap; word-wrap: break-all; color: white;">curl --request GET 'https://api.data.adj.news/api/news/${filteredMarket.question.replace(/ /g, '%20')}'</pre>
+          <button onclick="navigator.clipboard.writeText(document.querySelector('pre').innerText)" style="cursor: pointer;">Copy</button>
+        </div><br />
+        <h3>Related Markets</h3>
+        <div>
+          <pre style="white-space: pre-wrap; word-wrap: break-all; color: white;">curl --request GET 'https://api.data.adj.news/api/markets/related/${filteredMarket.question.replace(/ /g, '%20')}'</pre>
+          <button onclick="navigator.clipboard.writeText(document.querySelector('pre').innerText)" style="cursor: pointer;">Copy</button>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      document.addEventListener('click', function(e) {
+        if (e.target === modal) {
+          document.body.removeChild(modal);
+        }
+      });
+    }, {value: null}]])}</div>
 </div>
 
 <div class="grid grid-cols-2-3" style="margin-top: 2rem;">
@@ -361,7 +376,7 @@ function trend(v) {
     ${htl.html`
       <h2>Related News</h2>
       <table>
-        ${Array.isArray(relatedNews) ? relatedNews.map(news => htl.html`
+        ${Array.isArray(relatedNews) && relatedNews.length > 1 ? relatedNews.map(news => htl.html`
           <tr>
             <td style="padding-top: 15px;">
               <a href="${news.url}" style="text-decoration: underline; text-decoration-thickness: 0.5px; text-underline-offset: 1px;">
@@ -369,19 +384,20 @@ function trend(v) {
               </a>
             </td>
           </tr>
-        `) : ''}
-        ${!relatedNews || relatedNews.length < 2 ? exaNews.map(news => htl.html`
-          <td style="padding-top: 15px;">
-            <a href="${news.url}" style="text-decoration: underline; text-decoration-thickness: 0.5px; text-underline-offset: 1px;">
-              <h3>${news.title} - via ${news.feed_title}</h3>
-            </a>
-          </td>
+        `) : Array.isArray(exaNews) && exaNews.length > 1 ? exaNews.map(news => htl.html`
+          <tr>
+            <td style="padding-top: 15px;">
+              <a href="${news.url}" style="text-decoration: underline; text-decoration-thickness: 0.5px; text-underline-offset: 1px;">
+                <h3>${news.title} - via ${news.feed_title}</h3>
+              </a>
+            </td>
+          </tr>
         `) : htl.html`<a href="https://adj.news">Read more at adj.news</a>`}
       </table>
     `}
   </div>
   <div class="card grid-colspan-2 grid-rowspan-2" style="display: flex; flex-direction: column;">
-    <h2>Latest Probability</h2><br>
+    <h2>Probability ${startEnd.map((d) => d.toLocaleDateString("en-US")).join("–")}</h2><br>
     <span style="flex-grow: 1;">${resize((width, height) =>
       Plot.plot({
         width,
@@ -393,7 +409,7 @@ function trend(v) {
         },
         color,
         marks: [
-          Plot.lineY(latestTrades, {
+          Plot.lineY(latestTradesParsedArray.filter((d) => new Date(startEnd[0]) <= new Date(d.reported_date) && new Date(d.reported_date) < new Date(startEnd[1])), {
             x: d => new Date(d.reported_date),
             y: "midpoint",
             tip: true
@@ -406,8 +422,8 @@ function trend(v) {
 
 <div class="grid">
   <div class="card">
-    <h2>All Time Probability</h2>
-    <h3>Click or drag to zoom</h3><br>
+    <h2>All Time Probability</h2><br />
+    <!-- <h3>Click or drag to zoom</h3><br> -->
     ${resize((width) =>
       Plot.plot({
         type: "utc",
@@ -419,7 +435,34 @@ function trend(v) {
             x: d => new Date(d.reported_date),
             y: "midpoint", 
             tip: true
-          })
+          }),
+          (index, scales, channels, dimensions, context) => {
+            const x1 = dimensions.marginLeft;
+            const y1 = 0;
+            const x2 = dimensions.width - dimensions.marginRight;
+            const y2 = dimensions.height;
+            const brushed = (event) => {
+              if (!event.sourceEvent) return;
+              let {selection} = event;
+              if (!selection) {
+                const r = 10; // radius of point-based selection
+                let [px] = d3.pointer(event, context.ownerSVGElement);
+                px = Math.max(x1 + r, Math.min(x2 - r, px));
+                selection = [px - r, px + r];
+                g.call(brush.move, selection);
+              }
+              setStartEnd(selection.map(scales.x.invert));
+            };
+            const pointerdowned = (event) => {
+              const pointerleave = new PointerEvent("pointerleave", {bubbles: true, pointerType: "mouse"});
+              event.target.dispatchEvent(pointerleave);
+            };
+            const brush = d3.brushX().extent([[x1, y1], [x2, y2]]).on("brush end", brushed);
+            const g = d3.create("svg:g").call(brush);
+            g.call(brush.move, getStartEnd().map(scales.x));
+            g.on("pointerdown", pointerdowned);
+            return g.node();
+          }
         ]
       })
     )}
@@ -427,7 +470,7 @@ function trend(v) {
 </div>
 
 <div style="margin-top: 2rem;">
-  ${relatedMarkets ? relatedMarkets.map(market => htl.html`
+  <!-- ${relatedMarkets ? relatedMarkets.map(market => htl.html`
       <a href="/explore/market?ticker=${market.adj_ticker}" style="text-decoration: none; color: inherit;">
         <div class='card' style='padding-right: 1em'>
           <h2>${market.question}</h2>
@@ -441,6 +484,6 @@ function trend(v) {
           </table>
         </div>
       </a>
-    `) : ''}
+    `) : ''} -->
   </div>
 </div>

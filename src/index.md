@@ -139,8 +139,8 @@ function shuffle(array) {
 ```
 
 ```js
-let filteredMarkets = await db.query("SELECT * FROM markets WHERE status = 'active' and probability < 99 and probability > 0")
-let [filteredMarketsCount] = await db.query("SELECT COUNT(*) as count from markets WHERE status = 'active' and probability < 99 and probability > 0")
+let filteredMarkets = await db.query("SELECT * FROM markets WHERE (status = 'active' or status = 'true') and probability < 99 and probability > 0")
+let [filteredMarketsCount] = await db.query("SELECT COUNT(*) as count from markets WHERE (status = 'active' or status = 'true') and probability < 99 and probability > 0")
 const searchMarkets = view(Inputs.search(filteredMarkets, {
     placeholder: `Search ${formatNumber(filteredMarketsCount.count)} prediction markets`,
     width: "95%",
@@ -160,7 +160,7 @@ const searchMarkets = view(Inputs.search(filteredMarkets, {
             <p class="news-description">${market.category.replace(/[<>"]/g, '').split(',').map(cat => cat.trim()).filter(cat => cat !== 'All').join(', ')}</p>
             <p class="news-description">${Number(market.probability).toFixed(2)}% Probability</p>
             <div class="news-metadata">
-                <a class="news-author" href="${market.link}" target="_blank" rel="noopener noreferrer">${market.platform}</a>
+                <a class="news-author" href="${market.platform === 'polymarket' ? `https://polymarket.com/markets?_q=${market.question}` : market.platform === 'kalshi' ? `https://kalshi.com/events/${market.adj_ticker.replace('adj-', '')}` : market.link}" target="_blank" rel="noopener noreferrer">${market.platform.charAt(0).toUpperCase() + market.platform.slice(1)}</a>
                 ${market.volume && market.forecasts ? htl.html`<span class="news-date">${market.volume.toFixed(2)} volume / ${market.forecasts} Forecasters</span>` : ''}
             </div>
         </div>
