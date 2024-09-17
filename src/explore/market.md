@@ -468,22 +468,3 @@ const latestTradesParsedArray = latestTradesArray.map(jsonStr => {
     )}
   </div>
 </div>
-
-<div style="margin-top: 2rem;">
-  <!-- ${relatedMarkets ? relatedMarkets.map(market => htl.html`
-      <a href="/explore/market?ticker=${market.adj_ticker}" style="text-decoration: none; color: inherit;">
-        <div class='card' style='padding-right: 1em'>
-          <h2>${market.question}</h2>
-          <h1>${market.probability}%</h1>
-          <p>${market.description}</p>
-          <table>
-            <!-- <tr>
-              <td>Probability</td>
-              <td align="right">${formatPercent(market.probability, {signDisplay: "never"})}</td>
-            </tr> -->
-          </table>
-        </div>
-      </a>
-    `) : ''} -->
-  </div>
-</div>
