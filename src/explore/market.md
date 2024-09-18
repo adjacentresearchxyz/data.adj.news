@@ -72,7 +72,7 @@ const [probabilityData] = await db.query(`
 `);
 
 // first trade date
-const [firstDate] = await db.query(`SELECT *
+const [firstDate] = await db.query(`SELECT reported_date
   FROM trades
   WHERE adj_ticker = '${ticker}'
   ORDER BY reported_date ASC
@@ -80,7 +80,7 @@ const [firstDate] = await db.query(`SELECT *
 )
 
 // latest trade date
-const [latestDate] = await db.query(`SELECT *
+const [latestDate] = await db.query(`SELECT reported_date, midpoint
   FROM trades
   WHERE adj_ticker = '${ticker}'
   ORDER BY reported_date DESC
@@ -89,10 +89,10 @@ const [latestDate] = await db.query(`SELECT *
 
 // 10% into the rows for initial table load
 const [tenthPercentRow] = await db.query(`
-  SELECT * FROM (
-    SELECT *,
+  SELECT reported_date FROM (
+    SELECT reported_date,
            ROW_NUMBER() OVER (ORDER BY reported_date DESC) AS row_num,
-           COUNT(*) OVER () AS total_rows
+           COUNT(adj_ticker) OVER () AS total_rows
     FROM trades
     WHERE adj_ticker = '${ticker}'
   ) subquery
