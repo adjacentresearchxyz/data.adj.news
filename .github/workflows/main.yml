@@ -27,7 +27,7 @@ jobs:
       - name: Install Python dependencies
         run: |
           pip install --upgrade pip
-          pip install duckdb
+          pip install duckdb==1.1.0
           # Add any other required Python packages here
 
       - name: Set up Node.js
