@@ -209,45 +209,5 @@ a:visited {
   }
 }
 
-</style>
-<div style="display: flex; align-items: center; gap: 0.5rem; height: 2.2rem; margin: -1.5rem -2rem 2rem -2rem; padding: 0.5rem 2rem; border-bottom: solid 1px var(--theme-foreground-faintest); font: 500 16px var(--sans-serif);">
-  <a href="/" target="_self" rel="" style="display: flex; align-items: center;" class="header">
-    <svg version="1.0" xmlns="http://www.w3.org/2000/svg"
-        width="50" height="50" viewBox="0 0 167.000000 167.000000"
-        preserveAspectRatio="xMidYMid meet">
-      
-      <g transform="translate(0.000000,167.000000) scale(0.100000,-0.100000)"
-      fill="#ffffff" stroke="none">
-      <path d="M1469 1262 c-48 -39 -16 -122 48 -122 29 0 73 41 73 68 0 11 -9 31
-      -21 46 -25 31 -66 35 -100 8z"/>
-      <path d="M970 1125 c0 -122 -5 -140 -29 -111 -7 8 -32 19 -57 24 -139 30 -244
-      -83 -244 -262 0 -133 48 -231 127 -257 53 -17 126 -7 167 25 l35 27 7 -26 c6
-      -22 11 -25 55 -25 l49 0 0 355 c0 276 -3 356 -12 359 -7 3 -32 7 -55 10 l-43
-      6 0 -125z m-67 -174 c14 -6 35 -20 46 -32 19 -20 21 -35 21 -135 0 -106 -1
-      -114 -26 -143 -14 -17 -40 -35 -57 -39 -82 -22 -126 38 -127 171 0 88 15 134
-      55 165 30 24 51 27 88 13z"/>
-      <path d="M227 1183 c-7 -13 -207 -643 -207 -653 0 -6 27 -10 60 -10 38 0 60 4
-      60 11 0 7 9 43 21 81 l20 69 117 -3 116 -3 22 -75 21 -75 62 -3 c61 -3 63 -2
-      56 20 -14 46 -157 495 -181 571 l-26 77 -68 0 c-38 0 -71 -3 -73 -7z m113
-      -249 c22 -76 40 -145 40 -151 0 -10 -24 -13 -85 -13 -53 0 -85 4 -85 10 0 18
-      83 301 87 296 2 -2 22 -66 43 -142z"/>
-      <path d="M1290 990 l0 -40 101 0 101 0 -4 -197 c-2 -166 -6 -203 -21 -230 -23
-      -44 -78 -79 -158 -104 l-67 -20 9 -37 c5 -20 9 -40 9 -44 0 -11 119 21 176 48
-      62 29 114 78 141 132 16 32 18 69 21 285 l3 247 -155 0 -156 0 0 -40z"/>
-      </g>
-    </svg>
-  </a>
-    <div>
-    </div>
-    <div style="display: flex; flex-grow: 1; justify-content: flex-end; align-items: baseline;">
-      <input class="menu-btn" type="checkbox" id="menu-btn" name="menu-btn" />
-      <label class="menu-icon" for="menu-btn">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
-      </label>
-      <nav class="menu">
-        <a class="nav-item" href="https://adj.news" style="text-decoration: none">News</a>
-        <a class="nav-item" href="https://press.adjacentresearch.xyz" style="text-decoration: none">Press</a>
-      </nav>
-    </div>
-</div>`
+</style>`
 };
