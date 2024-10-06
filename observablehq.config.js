@@ -210,7 +210,7 @@ a:visited {
 }
 
 </style>
-<div style="display: flex; align-items: center; gap: 0.5rem; height: 2.2rem; margin: -1.5rem -2rem 2rem -2rem; padding: 0.5rem 2rem; border-bottom: solid 1px var(--theme-foreground-faintest); font: 500 16px var(--sans-serif);">
+<div style="display: flex; align-items: center; gap: 0.5rem; height: 2.2rem; border-bottom: solid 1px var(--theme-foreground-faintest); font: 500 16px var(--sans-serif);">
   <a href="/" target="_self" rel="" style="display: flex; align-items: center;" class="header">
     <svg version="1.0" xmlns="http://www.w3.org/2000/svg"
         width="50" height="50" viewBox="0 0 167.000000 167.000000"
