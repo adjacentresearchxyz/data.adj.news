@@ -178,6 +178,9 @@ ${Inputs.table(searchMarkets.sort((a, b) => Math.abs(b.price_diff) - Math.abs(a.
         latest_price: sparkbar(100),
         price_diff: sparkbar(100),
         ticker: (value, row) => {
+            return htl.html`<a href="/explore/market?ticker=adj-${value}">${value}</a>`;
+        },
+        platform: (value, row) => {
             if (value === value.toUpperCase()) {
                 return htl.html`<a href="https://kalshi.com/events/${value}" target="_blank">${value.length > 20 ? value.slice(0, 20) + '...' : value}</a>`;
             } else if (value === value.toLowerCase()) {

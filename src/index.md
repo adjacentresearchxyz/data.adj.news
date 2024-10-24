@@ -158,7 +158,7 @@ const searchMarkets = view(Inputs.search(filteredMarkets, {
                 </a>
             </h2>
             <p class="news-description">${market.category.replace(/[<>"]/g, '').split(',').map(cat => cat.trim()).filter(cat => cat !== 'All').join(', ')}</p>
-            <p class="news-description">${Number(market.probability).toFixed(2)}% Probability</p>
+            <!-- <p class="news-description">${Number(market.probability).toFixed(2)}% Probability</p> -->
             <div class="news-metadata">
                 <a class="news-author" href="${market.platform === 'polymarket' ? `https://polymarket.com/markets?_q=${market.question}` : market.platform === 'kalshi' ? `https://kalshi.com/events/${market.adj_ticker.replace('adj-', '')}` : market.link}" target="_blank" rel="noopener noreferrer">${market.platform.charAt(0).toUpperCase() + market.platform.slice(1)}</a>
                 ${market.volume && market.forecasts ? htl.html`<span class="news-date">${market.volume.toFixed(2)} volume / ${market.forecasts} Forecasters</span>` : ''}
