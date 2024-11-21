@@ -49,10 +49,10 @@ con.sql("""
 		JOIN time_diffs td ON m.adj_ticker = td.adj_ticker
 		WHERE (status = 'active' or status = 'true') 
 		 AND current_date <= m.end_date
-         AND m.category != 'Financials' AND m.category NOT LIKE '%Sports%' AND m.category NOT LIKE '%Crypto%' AND m.category NOT LIKE '%Memecoins%'
          AND td.latest_price < 95 -- filter out ~settled markets
          AND td.latest_price > 5 -- filter out ~settled markets
          AND td.previous_price > 5
+         AND td.
          -- AND price_diff > 10 -- need to be over a 10% move to be "breaking"
 		ORDER BY td.price_diff) TO STDOUT (FORMAT 'parquet', COMPRESSION 'gzip');
 """)
