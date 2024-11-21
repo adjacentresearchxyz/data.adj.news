@@ -52,7 +52,6 @@ con.sql("""
          AND td.latest_price < 95 -- filter out ~settled markets
          AND td.latest_price > 5 -- filter out ~settled markets
          AND td.previous_price > 5
-         AND td.
          -- AND price_diff > 10 -- need to be over a 10% move to be "breaking"
 		ORDER BY td.price_diff) TO STDOUT (FORMAT 'parquet', COMPRESSION 'gzip');
 """)
