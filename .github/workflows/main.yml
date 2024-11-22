@@ -38,6 +38,9 @@ jobs:
       - name: Install Observable Framework
         run: npm install @observablehq/framework
 
+      - name: Install duckdb-wasm
+        run: npm install @duckdb/duckdb-wasm@1.28.0
+
       - name: Build Observable Framework site
         run: npx observable build
         env:
