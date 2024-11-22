@@ -38,19 +38,16 @@ jobs:
       - name: Install Observable Framework
         run: npm install @observablehq/framework
 
-      - name: Install duckdb-wasm
-        run: npm install @duckdb/duckdb-wasm@1.28.0
-
       - name: Build Observable Framework site
-        run: npx observable build
+        run: npm run build
         env:
           MOTHERDUCK_TOKEN: ${{ secrets.MOTHERDUCK_TOKEN }}
-
-      - name: Deploy to Cloudflare Pages
-        uses: cloudflare/pages-action@v1
+            
+      - name: Deploy to Cloudflare Workers with Wrangler
+        uses: cloudflare/wrangler-action@v3.1.0
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           projectName: data-adj-news  
-          directory: dist  
+          workingDirectory: dist  
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
