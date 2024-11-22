@@ -24,7 +24,8 @@
     "parquetjs-lite": "^0.8.7",
     "postgres": "^3.4.4",
     "topojson-client": "^3.1.0",
-    "topojson-simplify": "^3.0.3"
+    "topojson-simplify": "^3.0.3",
+    "@duckdb/duckdb-wasm": "1.28.0"
   },
   "engines": {
     "node": ">=18"
