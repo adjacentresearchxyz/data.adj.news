@@ -51,3 +51,13 @@ jobs:
           projectName: data-adj-news  
           directory: dist  
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+
+            
+      - name: Deploy to Cloudflare Workers with Wrangler
+        uses: cloudflare/wrangler-action@v3.1.0
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: data-adj-news  
+          workingDirectory: dist  
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
