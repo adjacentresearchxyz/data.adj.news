@@ -27,6 +27,9 @@
     "topojson-simplify": "^3.0.3",
     "@duckdb/duckdb-wasm": "1.28.0"
   },
+  "overrides": {
+    "@duckdb/duckdb-wasm": "1.28.0"
+  },
   "engines": {
     "node": ">=18"
   }
