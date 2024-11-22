@@ -33,16 +33,13 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: '22.2.0'
 
       - name: Install Observable Framework
         run: npm install @observablehq/framework
 
-      - name: Install duckdb-wasm
-        run: npm install @duckdb/duckdb-wasm@1.28.0
-
       - name: Build Observable Framework site
-        run: npx observable build
+        run: npm run build
         env:
           MOTHERDUCK_TOKEN: ${{ secrets.MOTHERDUCK_TOKEN }}
 
