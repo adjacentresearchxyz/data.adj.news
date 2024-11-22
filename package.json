@@ -6,7 +6,7 @@
     "postinstall": "ln -sf ../../../../dist/bin/observable.js node_modules/.bin/observable"
   },
   "dependencies": {
-    "@duckdb/duckdb-wasm": "1.24.0",
+    "@duckdb/duckdb-wasm": "1.28.0",
     "@observablehq/framework": "^1.8.0",
     "@supabase/supabase-js": "^2.44.0",
     "@xenova/transformers": "^2.17.2",
